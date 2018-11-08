@@ -125,9 +125,12 @@ public class Anilamp_GLEventListener implements GLEventListener {
   private Model floor, sphere, cube, cube2;
   private Light light;
   private SGNode robotRoot;
-  
+    
   private float xPosition = 0;
   private TransformNode translateX, robotMoveTranslate, leftArmRotate, rightArmRotate;
+  
+  private SGNode lampRoot;
+  private TransformNode lTranslateX, lampMoveTranslate;
   
   private void initialise(GL3 gl) {
     createRandomNumbers();
@@ -139,7 +142,6 @@ public class Anilamp_GLEventListener implements GLEventListener {
     int[] textureId5 = TextureLibrary.loadTexture(gl, "textures/wattBook.jpg");
     int[] textureId6 = TextureLibrary.loadTexture(gl, "textures/wattBook_specular.jpg");
     
-        
     light = new Light(gl);
     light.setCamera(camera);
     
@@ -163,6 +165,31 @@ public class Anilamp_GLEventListener implements GLEventListener {
     
     cube2 = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId5, textureId6); 
     
+    // Lamp
+    
+    lampRoot = new NameNode("root");
+    lampMoveTranslate = new TransformNode("PlayerTransform", Mat4Transform.translate(2f, 0, 0));
+    
+    TransformNode lampTranslate = new TransformNode("lamp transform", Mat4Transform.translate(0.5f, 0, 0));
+    
+    NameNode lamp = new NameNode("body");
+    	Mat4 a = Mat4Transform.scale(3, 4, 2);
+    	a = Mat4.multiply(a, Mat4Transform.translate(0, 0.5f, 0));
+    	TransformNode lBodyTransform = new TransformNode("body transform", a);
+    		ModelNode lBodyShape = new ModelNode("Cube(body)", cube);
+    
+    //Build index
+    lampRoot.addChild(lampMoveTranslate);
+    	lampMoveTranslate.addChild(lampTranslate);
+    		lampTranslate.addChild(lamp);
+    			lamp.addChild(lBodyTransform);
+    				lBodyTransform.addChild(lBodyShape);
+    
+    //Lamp
+    				
+    lampRoot.update();
+    lampRoot.print(0, false);
+    	
     // robot
     
     float bodyHeight = 3f;
@@ -257,7 +284,7 @@ public class Anilamp_GLEventListener implements GLEventListener {
             rightlegTransform.addChild(rightLegShape);
     
     robotRoot.update();  // IMPORTANT - don't forget this
-    //robotRoot.print(0, false);
+    robotRoot.print(0, false);
     //System.exit(0);
   }
  

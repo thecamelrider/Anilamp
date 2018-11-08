@@ -4,13 +4,16 @@ import com.jogamp.common.nio.*;
 import com.jogamp.opengl.*;
 
 public class Mesh {
-  
+  //Mesh public attributes
   private float[] vertices;
   private int[] indices;
+  private int[] uvs;
+  
   private int vertexStride = 8;
   private int vertexXYZFloats = 3;
   private int vertexNormalFloats = 3;
   private int vertexTexFloats = 2;
+  
   private int[] vertexBufferId = new int[1];
   private int[] vertexArrayId = new int[1];
   private int[] elementBufferId = new int[1];
