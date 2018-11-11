@@ -124,13 +124,12 @@ public class Anilamp_GLEventListener implements GLEventListener {
   private Mat4 perspective;
   private Model floor, sphere, cube, cube2;
   private Light light;
-  private SGNode robotRoot;
+  private SGNode robotRoot, lampRoot;
     
   private float xPosition = 0;
   private TransformNode translateX, robotMoveTranslate, leftArmRotate, rightArmRotate;
   
-  private SGNode lampRoot;
-  private TransformNode lTranslateX, lampMoveTranslate;
+  private TransformNode lTranslateX, lampMoveTranslate, lowerArmRotate, upperArmRotate;
   
   private void initialise(GL3 gl) {
     createRandomNumbers();
@@ -165,26 +164,84 @@ public class Anilamp_GLEventListener implements GLEventListener {
     
     cube2 = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId5, textureId6); 
     
-    // Lamp
+    // Lamp Dimensions
+    float baseHeight = 0.5f;
+    float armLength = 6;
     
+    //Lamp builder
     lampRoot = new NameNode("root");
-    lampMoveTranslate = new TransformNode("PlayerTransform", Mat4Transform.translate(2f, 0, 0));
-    
+    lampMoveTranslate = new TransformNode("PlayerTransform", Mat4Transform.translate(5f, 0, 0));
     TransformNode lampTranslate = new TransformNode("lamp transform", Mat4Transform.translate(0.5f, 0, 0));
     
-    NameNode lamp = new NameNode("body");
-    	Mat4 a = Mat4Transform.scale(3, 4, 2);
-    	a = Mat4.multiply(a, Mat4Transform.translate(0, 0.5f, 0));
-    	TransformNode lBodyTransform = new TransformNode("body transform", a);
-    		ModelNode lBodyShape = new ModelNode("Cube(body)", cube);
+    NameNode base = new NameNode("base");
+	Mat4 a = Mat4Transform.translate(0, 0.5f, 0);	//Bottom origin point
+	a = Mat4.multiply(Mat4Transform.scale(3, baseHeight, 2.25f), a);	//Scale
+		TransformNode baseTransform = new TransformNode("base transform", a);
+		ModelNode baseModel = new ModelNode("Cube(base)", cube);
+	
+	//Lower arm
+	//Translate lower arm
+	//Rotate upper arm
+    TransformNode translateLower = new TransformNode("Translate lower Arm",
+    		Mat4Transform.translate(0, baseHeight, 0));
+    lowerArmRotate = new TransformNode("Rotate lower arm",
+    		Mat4Transform.rotateAroundZ(20));
     
+    NameNode lowerArm = new NameNode("lower arm");
+	a = new Mat4(1);
+	a = Mat4.multiply(Mat4Transform.translate(0, 0.5f, 0), a);		//Bottom origin point
+	a = Mat4.multiply(Mat4Transform.scale(1, armLength, 1), a);		//Scale
+	//a = Mat4.multiply(Mat4Transform.rotateAroundZ(20), a);			//Rotate
+	
+	TransformNode lowerArmTransform = new TransformNode("lower arm transform", a);
+		ModelNode lowerArmModel = new ModelNode("Cube(lower arm)", cube);
+
+	//Translate translate upper arm
+	TransformNode translateUpper = new TransformNode("Translate upper", 
+			Mat4Transform.translate(0, armLength, 0));
+	
+	upperArmRotate = new TransformNode("Rotate upper",
+			Mat4Transform.rotateAroundZ(0));
+	//Upper arm
+    NameNode upperArm = new NameNode("upper arm");
+	a = new Mat4(1);
+	a = Mat4.multiply(Mat4Transform.translate(0, 0.5f, 0), a);		//Bottom origin point
+	a = Mat4.multiply(Mat4Transform.scale(1, armLength, 1), a);		//Scale
+	a = Mat4.multiply(Mat4Transform.rotateAroundZ(20), a);			//Rotate
+		TransformNode upperArmTransform = new TransformNode("upper arm transform", a);
+		ModelNode upperArmModel = new ModelNode("Cube(upper arm)", cube);
+		
+	//Head
+	TransformNode translateHead = new TransformNode("Translate head", 
+		Mat4.multiply(Mat4Transform.rotateAroundZ(-50), Mat4Transform.translate(0, armLength, 0)));
+		
+    NameNode head = new NameNode("head");
+	a = new Mat4(1);
+	a = Mat4.multiply(Mat4Transform.translate(0, 0.5f, 0), a);		//Bottom origin point
+	a = Mat4.multiply(Mat4Transform.scale(2, 2, 2), a);		//Scale
+		TransformNode headTransform = new TransformNode("head transform", a);
+		ModelNode headModel = new ModelNode("Cube(head)", cube);
+
     //Build index
     lampRoot.addChild(lampMoveTranslate);
     	lampMoveTranslate.addChild(lampTranslate);
-    		lampTranslate.addChild(lamp);
-    			lamp.addChild(lBodyTransform);
-    				lBodyTransform.addChild(lBodyShape);
-    
+    		lampTranslate.addChild(base);
+    		base.addChild(baseTransform);
+    			baseTransform.addChild(baseModel);
+    		base.addChild(translateLower);
+    			translateLower.addChild(lowerArmRotate);
+    			lowerArmRotate.addChild(lowerArm);
+	    			lowerArm.addChild(lowerArmTransform);
+	    			lowerArmTransform.addChild(lowerArmModel);
+	    			lowerArm.addChild(translateUpper);
+	    			translateUpper.addChild(upperArmRotate);
+	    			upperArmRotate.addChild(upperArm);
+    					upperArm.addChild(upperArmTransform);
+    					upperArmTransform.addChild(upperArmModel);
+    					upperArm.addChild(translateHead);
+    					translateHead.addChild(head);
+    						head.addChild(headTransform);
+    						headTransform.addChild(headModel);
     //Lamp
     				
     lampRoot.update();
@@ -196,7 +253,7 @@ public class Anilamp_GLEventListener implements GLEventListener {
     float bodyWidth = 2f;
     float bodyDepth = 1f;
     float headScale = 2f;
-    float armLength = 3.5f;
+    float robotArmLength = 3.5f;
     float armScale = 0.5f;
     float legLength = 3.5f;
     float legScale = 0.67f;
@@ -212,12 +269,12 @@ public class Anilamp_GLEventListener implements GLEventListener {
       TransformNode bodyTransform = new TransformNode("body transform", m);
         ModelNode bodyShape = new ModelNode("Cube(body)", cube);
 
-    NameNode head = new NameNode("head"); 
+    NameNode robotHead = new NameNode("head"); 
       m = new Mat4(1);
       m = Mat4.multiply(m, Mat4Transform.translate(0,bodyHeight,0));
       m = Mat4.multiply(m, Mat4Transform.scale(headScale,headScale,headScale));
       m = Mat4.multiply(m, Mat4Transform.translate(0,0.5f,0));
-      TransformNode headTransform = new TransformNode("head transform", m);
+      TransformNode robotHeadTransform = new TransformNode("head transform", m);
         ModelNode headShape = new ModelNode("Sphere(head)", sphere);
     
    NameNode leftarm = new NameNode("left arm");
@@ -225,7 +282,7 @@ public class Anilamp_GLEventListener implements GLEventListener {
                                            Mat4Transform.translate((bodyWidth*0.5f)+(armScale*0.5f),bodyHeight,0));
       leftArmRotate = new TransformNode("leftarm rotate",Mat4Transform.rotateAroundX(180));
       m = new Mat4(1);
-      m = Mat4.multiply(m, Mat4Transform.scale(armScale,armLength,armScale));
+      m = Mat4.multiply(m, Mat4Transform.scale(armScale,robotArmLength,armScale));
       m = Mat4.multiply(m, Mat4Transform.translate(0,0.5f,0));
       TransformNode leftArmScale = new TransformNode("leftarm scale", m);
         ModelNode leftArmShape = new ModelNode("Cube(left arm)", cube2);
@@ -235,7 +292,7 @@ public class Anilamp_GLEventListener implements GLEventListener {
                                             Mat4Transform.translate(-(bodyWidth*0.5f)-(armScale*0.5f),bodyHeight,0));
       rightArmRotate = new TransformNode("rightarm rotate",Mat4Transform.rotateAroundX(180));
       m = new Mat4(1);
-      m = Mat4.multiply(m, Mat4Transform.scale(armScale,armLength,armScale));
+      m = Mat4.multiply(m, Mat4Transform.scale(armScale,robotArmLength,armScale));
       m = Mat4.multiply(m, Mat4Transform.translate(0,0.5f,0));
       TransformNode rightArmScale = new TransformNode("rightarm scale", m);
         ModelNode rightArmShape = new ModelNode("Cube(right arm)", cube2);
@@ -263,9 +320,9 @@ public class Anilamp_GLEventListener implements GLEventListener {
         robotTranslate.addChild(body);
           body.addChild(bodyTransform);
             bodyTransform.addChild(bodyShape);
-          body.addChild(head);
-            head.addChild(headTransform);
-            headTransform.addChild(headShape);
+          body.addChild(robotHead);
+            robotHead.addChild(robotHeadTransform);
+            robotHeadTransform.addChild(headShape);
           body.addChild(leftarm);
             leftarm.addChild(leftArmTranslate);
             leftArmTranslate.addChild(leftArmRotate);
@@ -295,6 +352,7 @@ public class Anilamp_GLEventListener implements GLEventListener {
     floor.render(gl); 
     if (animation) updateLeftArm();
     robotRoot.draw(gl);
+    lampRoot.draw(gl);
   }
 
   private void updateLeftArm() {
