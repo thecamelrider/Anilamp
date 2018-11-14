@@ -34,6 +34,7 @@ public class Anilamp extends JFrame implements ActionListener {
     canvas.addKeyListener(new MyKeyboardInput(camera));
     getContentPane().add(canvas, BorderLayout.CENTER);
     
+    //Create UI
     JMenuBar menuBar=new JMenuBar();
     this.setJMenuBar(menuBar);
       JMenu fileMenu = new JMenu("File");
@@ -41,7 +42,7 @@ public class Anilamp extends JFrame implements ActionListener {
         quitItem.addActionListener(this);
         fileMenu.add(quitItem);
     menuBar.add(fileMenu);
-    
+   
     JPanel p = new JPanel();
       JButton b = new JButton("camera X");
       b.addActionListener(this);
@@ -49,22 +50,10 @@ public class Anilamp extends JFrame implements ActionListener {
       b = new JButton("camera Z");
       b.addActionListener(this);
       p.add(b);
-      b = new JButton("start");
+      b = new JButton("Jump");
       b.addActionListener(this);
       p.add(b);
-      b = new JButton("stop");
-      b.addActionListener(this);
-      p.add(b);
-      b = new JButton("increase X position");
-      b.addActionListener(this);
-      p.add(b);
-      b = new JButton("decrease X position");
-      b.addActionListener(this);
-      p.add(b);
-      b = new JButton("lowered arms");
-      b.addActionListener(this);
-      p.add(b);
-      b = new JButton("raised arms");
+      b = new JButton("Random Pose");
       b.addActionListener(this);
       p.add(b);
     this.add(p, BorderLayout.SOUTH);
@@ -90,23 +79,11 @@ public class Anilamp extends JFrame implements ActionListener {
       camera.setCamera(Camera.CameraType.Z);
       canvas.requestFocusInWindow();
     }
-    else if (e.getActionCommand().equalsIgnoreCase("start")) {
-      glEventListener.startAnimation();
+    else if (e.getActionCommand().equalsIgnoreCase("Jump")) {
+      glEventListener.JumpToRandomPosition();
     }
-    else if (e.getActionCommand().equalsIgnoreCase("stop")) {
-      glEventListener.stopAnimation();
-    }
-    else if (e.getActionCommand().equalsIgnoreCase("increase X position")) {
-      glEventListener.incXPosition();
-    }
-    else if (e.getActionCommand().equalsIgnoreCase("decrease X position")) {
-      glEventListener.decXPosition();
-    }
-    else if (e.getActionCommand().equalsIgnoreCase("lowered arms")) {
-      glEventListener.loweredArms();
-    }
-    else if (e.getActionCommand().equalsIgnoreCase("raised arms")) {
-      glEventListener.raisedArms();
+    else if (e.getActionCommand().equalsIgnoreCase("Random Pose")) {
+      glEventListener.strikeRandomPose();
     }
     else if(e.getActionCommand().equalsIgnoreCase("quit"))
       System.exit(0);
