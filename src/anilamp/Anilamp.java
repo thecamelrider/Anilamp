@@ -80,6 +80,9 @@ public class Anilamp extends JFrame implements ActionListener {
       camera.setCamera(Camera.CameraType.Z);
       canvas.requestFocusInWindow();
     }
+    else if (e.getActionCommand().equalsIgnoreCase("Toggle Light")) {
+      glEventListener.toggleLight();
+    }
     else if (e.getActionCommand().equalsIgnoreCase("Jump")) {
       glEventListener.JumpToRandomPosition();
     }

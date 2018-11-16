@@ -69,7 +69,7 @@ public class Anilamp_GLEventListener implements GLEventListener {
    *
    *
    */
-   
+  
   private boolean animation = false;
   private double savedTime = 0;
    
@@ -90,22 +90,18 @@ public class Anilamp_GLEventListener implements GLEventListener {
    * This will be added to in later examples.
    */
 
+  //Scene objects
+  private Model floor, sphere, cube, cube2, woodCube;
+  
   private Camera camera;
   private Mat4 perspective;
   private Lamp lamp;
   private Table table;
-  private Model floor, sphere, cube, cube2;
   private Light light;
-  private SGNode lampRoot;
    
-  //Animation params
+  //Save ref to nodes
   private boolean animating, posing, jumping;
-  
-  private float xPosition = 0;
-  private TransformNode translateX, robotMoveTranslate, leftArmRotate, rightArmRotate;
-  
-  private TransformNode lTranslateX, lampMoveTranslate, lowerArmRotate, upperArmRotate;
-  
+    
   private void initialise(GL3 gl) {
     createRandomNumbers();
     int[] textureId0 = TextureLibrary.loadTexture(gl, "textures/chequerboard.jpg");
@@ -116,8 +112,17 @@ public class Anilamp_GLEventListener implements GLEventListener {
     int[] textureId5 = TextureLibrary.loadTexture(gl, "textures/wattBook.jpg");
     int[] textureId6 = TextureLibrary.loadTexture(gl, "textures/wattBook_specular.jpg");
     
+    //No specMap :(
+    int[] textureId7 = TextureLibrary.loadTexture(gl, "textures/table/WoodFlooring044_COL_3K.jpg");
+    
     light = new Light(gl);
     light.setCamera(camera);
+    
+    //For lamp
+    Light spotlight = new Light(gl);
+    spotlight.setCamera(camera);
+    //
+    
     
     Mesh mesh = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
     Shader shader = new Shader(gl, "shaders/vs_tt_05.txt", "shaders/fs_tt_05.txt");
@@ -136,99 +141,18 @@ public class Anilamp_GLEventListener implements GLEventListener {
     material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
     modelMatrix = Mat4.multiply(Mat4Transform.scale(4,4,4), Mat4Transform.translate(0,0.5f,0));
     cube = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId3, textureId4);
-    
     cube2 = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId5, textureId6); 
     
+    woodCube = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId7);
+    //Setting up all unit models
+    
+    
     //Create table
-     table = new Table(10, 3, 5, cube);
-     
-    // Lamp Dimensions
-    float baseHeight = 0.5f;
-    float armLength = 6;
+    table = new Table(6, 10, 5, woodCube);
+    table.setPosition(0, 0, 0);
     
-    //Lamp builder
-    lampRoot = new NameNode("root");
-    lampMoveTranslate = new TransformNode("PlayerTransform", Mat4Transform.translate(5f, 0, 0));
-    TransformNode lampTranslate = new TransformNode("lamp transform", Mat4Transform.translate(0.5f, 0, 0));
-    
-    NameNode base = new NameNode("base");
-	Mat4 a = Mat4Transform.translate(0, 0.5f, 0);	//Bottom origin point
-	a = Mat4.multiply(Mat4Transform.scale(3, baseHeight, 2.25f), a);	//Scale
-		TransformNode baseTransform = new TransformNode("base transform", a);
-		ModelNode baseModel = new ModelNode("Cube(base)", cube);
-	
-	//Lower arm
-	//Translate lower arm
-	//Rotate upper arm
-    TransformNode translateLower = new TransformNode("Translate lower Arm",
-    		Mat4Transform.translate(0, baseHeight, 0));
-    lowerArmRotate = new TransformNode("Rotate lower arm",
-    		Mat4Transform.rotateAroundZ(-20));
-    
-    NameNode lowerArm = new NameNode("lower arm");
-	a = new Mat4(1);
-	a = Mat4.multiply(Mat4Transform.translate(0, 0.5f, 0), a);		//Bottom origin point
-	a = Mat4.multiply(Mat4Transform.scale(1, armLength, 1), a);		//Scale
-	//a = Mat4.multiply(Mat4Transform.rotateAroundZ(20), a);		//Local rotation
-	
-	TransformNode lowerArmTransform = new TransformNode("lower arm transform", a);
-		ModelNode lowerArmModel = new ModelNode("Cube(lower arm)", cube);
-		
-	//Translate translate upper arm
-	TransformNode translateUpper = new TransformNode("Translate upper", 
-			Mat4Transform.translate(0, armLength, 0));
-	
-	upperArmRotate = new TransformNode("Rotate upper",
-			Mat4Transform.rotateAroundZ(-20));
-	
-	//Upper arm
-    NameNode upperArm = new NameNode("upper arm");
-	a = new Mat4(1);
-	a = Mat4.multiply(Mat4Transform.translate(0, 0.5f, 0), a);		//Bottom origin point
-	a = Mat4.multiply(Mat4Transform.scale(1, armLength, 1), a);		//Scale
-	//a = Mat4.multiply(Mat4Transform.rotateAroundZ(20), a);		//Local Rotation
-		TransformNode upperArmTransform = new TransformNode("upper arm transform", a);
-		ModelNode upperArmModel = new ModelNode("Cube(upper arm)", cube);
-	
-	//Translate head
-	TransformNode translateHead = new TransformNode("Translate head", 
-			Mat4Transform.translate(0, armLength, 0));
-	
-	//Head
-    NameNode head = new NameNode("head");
-	a = new Mat4(1);
-	a = Mat4.multiply(Mat4Transform.translate(0, 0.5f, 0), a);		//Bottom origin point
-	a = Mat4.multiply(Mat4Transform.scale(4, 2, 2), a);				//Scale
-		TransformNode headTransform = new TransformNode("head transform", a);
-		ModelNode headModel = new ModelNode("Cube(head)", cube);
-
-	
-    //Build index
-    lampRoot.addChild(lampMoveTranslate);
-    	lampMoveTranslate.addChild(lampTranslate);
-    		lampTranslate.addChild(base);
-    		base.addChild(baseTransform);
-    			baseTransform.addChild(baseModel);
-    		base.addChild(translateLower);
-    			//lowerArmRotate.addChild(translateLower);
-    			//translateLower.addChild(lowerArm);
-    			translateLower.addChild(lowerArmRotate);
-    			lowerArmRotate.addChild(lowerArm);
-	    			lowerArm.addChild(lowerArmTransform);
-	    			lowerArmTransform.addChild(lowerArmModel);
-	    			lowerArm.addChild(translateUpper);
-	    			translateUpper.addChild(upperArmRotate);
-	    			upperArmRotate.addChild(upperArm);
-    					upperArm.addChild(upperArmTransform);
-    					upperArmTransform.addChild(upperArmModel);
-    					upperArm.addChild(translateHead);
-    					translateHead.addChild(head);
-    						head.addChild(headTransform);
-    						headTransform.addChild(headModel);
-    //Lamp
-    				
-    lampRoot.update();
-    lampRoot.print(0, false);
+    //Create lamp
+    lamp = new Lamp(3, 0.7f, cube, cube2, spotlight);
   }
   
   private void render(GL3 gl) {
@@ -237,13 +161,13 @@ public class Anilamp_GLEventListener implements GLEventListener {
     light.render(gl);
     floor.render(gl);
     table.render(gl);
+    lamp.render(gl);
     
     if(jumping)
     	updateJumpAnim();
     if(posing)
     	updatePoseAnim();
     
-    lampRoot.draw(gl);
   }
 
   public void updateJumpAnim() {
@@ -261,13 +185,15 @@ public class Anilamp_GLEventListener implements GLEventListener {
 	
 	//Otherwise set final jump position
 	
+	//Change table pos
+	Vec3 pos = table.getPosition();
+	table.setPosition(pos.x + 1f, pos.y, pos.z);
+	
 	//Random end pos
 	float targetX = (float) ((Math.random() * table.width) + 0);
 	float targetZ = (float) ((Math.random() * table.length) + 0);
 
 	Vec3 targetPos = new Vec3(targetX, 0, targetZ);
-	
-	
   }
 	
   public void strikeRandomPose() {
@@ -283,6 +209,9 @@ public class Anilamp_GLEventListener implements GLEventListener {
     //leftArmRotate.update();
   }
   
+  public void toggleLight() {
+		lamp.toggleLight();
+	}
   // The light's postion is continually being changed, so needs to be calculated for each frame.
   private Vec3 getLightPosition() {
     double elapsedTime = getSeconds()-startTime;
