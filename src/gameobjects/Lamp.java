@@ -2,17 +2,17 @@ package gameobjects;
 
 import com.jogamp.opengl.GL3;
 
-import anilamp.Light;
 import anilamp.Model;
 import anilamp.Utils;
 import gmaths.Mat4;
 import gmaths.Mat4Transform;
+import gmaths.Vec3;
 import scenegraph.LightNode;
 import scenegraph.ModelNode;
 import scenegraph.NameNode;
 import scenegraph.TransformNode;
 
-public class Lamp {
+public class Lamp extends SceneObject{
 	//Transforms to fuck with
 	public TransformNode lampWorldTransform;
 	public TransformNode lowerArmRotate;
@@ -25,6 +25,9 @@ public class Lamp {
 	
 	float legHeights;
 	float headLength;
+	
+	//Lamp position
+	//private Vec3 worldPos;
 	
 	//Rendered subobjects
 	private NameNode lampRoot;
@@ -160,5 +163,17 @@ public class Lamp {
 	
 	public void render(GL3 gl) {
 	    lampRoot.draw(gl);
+	}
+
+	@Override
+	public Vec3 getPosition() {
+		Vec3 positionk;
+		return this.position;
+	}
+
+	@Override
+	public void setPosition(float x, float y, float z) {
+		// TODO Auto-generated method stub
+		
 	}
 }

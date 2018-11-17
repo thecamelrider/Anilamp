@@ -1,5 +1,8 @@
 package anilamp;
 import gmaths.*;
+import meshes.Mesh;
+import meshes.Sphere;
+import meshes.TwoTriangles;
 
 import java.nio.*;
 import com.jogamp.common.nio.*;
@@ -98,23 +101,28 @@ public class Anilamp_GLEventListener implements GLEventListener {
   private Lamp lamp;
   private Table table;
   private Light light;
-   
+  private Room room;
+  
   //Save ref to nodes
   private boolean animating, posing, jumping;
     
   private void initialise(GL3 gl) {
     createRandomNumbers();
+    //Default texture
     int[] textureId0 = TextureLibrary.loadTexture(gl, "textures/chequerboard.jpg");
-    int[] textureId1 = TextureLibrary.loadTexture(gl, "textures/jade.jpg");
-    int[] textureId2 = TextureLibrary.loadTexture(gl, "textures/jade_specular.jpg");
-    int[] textureId3 = TextureLibrary.loadTexture(gl, "textures/container2.jpg");
-    int[] textureId4 = TextureLibrary.loadTexture(gl, "textures/container2_specular.jpg");
-    int[] textureId5 = TextureLibrary.loadTexture(gl, "textures/wattBook.jpg");
-    int[] textureId6 = TextureLibrary.loadTexture(gl, "textures/wattBook_specular.jpg");
+    //Shitty wood
+    //int[] textureId3 = TextureLibrary.loadTexture(gl, "textures/container2.jpg");
+    //int[] textureId4 = TextureLibrary.loadTexture(gl, "textures/container2_specular.jpg");
+    //Plaster wall
+    int[] textureId3 = TextureLibrary.loadTexture(gl, "textures/room/Plaster17_COL_VAR1_3K.jpg");
+    int[] textureId4 = TextureLibrary.loadTexture(gl, "textures/room/Plaster17_REFL_3K.jpg");	
+    //Tiles
+    int[] textureId5 = TextureLibrary.loadTexture(gl, "textures/room/Tiles05_COL_VAR1_3K.jpg");
+    int[] textureId6 = TextureLibrary.loadTexture(gl, "textures/room/Tiles05_REFL_3K.jpg");
+    //Wood flooring
+    int[] textureId7 = TextureLibrary.loadTexture(gl, "textures/table/WoodFlooring044_COL_3K.jpg");   
     
-    //No specMap :(
-    int[] textureId7 = TextureLibrary.loadTexture(gl, "textures/table/WoodFlooring044_COL_3K.jpg");
-    
+    //Objects
     light = new Light(gl);
     light.setCamera(camera);
     
@@ -123,29 +131,39 @@ public class Anilamp_GLEventListener implements GLEventListener {
     spotlight.setCamera(camera);
     //
     
-    
+    //Room mesh and material
     Mesh mesh = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
-    Shader shader = new Shader(gl, "shaders/vs_tt_05.txt", "shaders/fs_tt_05.txt");
-    Material material = new Material(new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
-    Mat4 modelMatrix = Mat4Transform.scale(16,1f,16);
-    floor = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId0);
+    Shader shader = new Shader(gl, "shaders/vs_cube_04.txt", "shaders/fs_cube_04.txt");
+    Material material = new Material(new Vec3(0.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
+    Mat4 modelMatrix = Mat4Transform.scale(24,1f,24);
+    floor = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId5);
     
+    mesh = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
+    shader = new Shader(gl, "shaders/vs_cube_04.txt", "shaders/fs_cube_04.txt");
+    material = new Material(new Vec3(0.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
+    modelMatrix = Mat4Transform.scale(4f,1f,4f);
+    Model wall = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId4);
+    
+    //Some weird thing
     mesh = new Mesh(gl, Sphere.vertices.clone(), Sphere.indices.clone());
     shader = new Shader(gl, "shaders/vs_cube_04.txt", "shaders/fs_cube_04.txt");
     material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
     modelMatrix = Mat4.multiply(Mat4Transform.scale(4,4,4), Mat4Transform.translate(0,0.5f,0));
-    sphere = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId1, textureId2);
+    sphere = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId3, textureId4);
     
+    //Wooden cubes
     mesh = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
     shader = new Shader(gl, "shaders/vs_cube_04.txt", "shaders/fs_cube_04.txt");
     material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
     modelMatrix = Mat4.multiply(Mat4Transform.scale(4,4,4), Mat4Transform.translate(0,0.5f,0));
-    cube = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId3, textureId4);
-    cube2 = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId5, textureId6); 
+    cube2 = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId3, textureId4);
+    cube = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId5, textureId6); 
     
     woodCube = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId7);
     //Setting up all unit models
     
+    //Create wall and floors
+    room = new Room(48, 24, 18, floor);
     
     //Create table
     table = new Table(6, 10, 5, woodCube);
@@ -157,9 +175,10 @@ public class Anilamp_GLEventListener implements GLEventListener {
   
   private void render(GL3 gl) {
     gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-    light.setPosition(getLightPosition());  // changing light position each frame
+    
+    //light.setPosition(getLightPosition());  // changing light position each frame
     light.render(gl);
-    floor.render(gl);
+    room.render(gl);
     table.render(gl);
     lamp.render(gl);
     

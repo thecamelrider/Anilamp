@@ -9,7 +9,7 @@ import scenegraph.ModelNode;
 import scenegraph.NameNode;
 import scenegraph.TransformNode;
 
-public class Table {
+public class Table extends SceneObject {
 	public float width;
 	public float length;
 	public float legHt;

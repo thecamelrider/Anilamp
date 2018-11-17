@@ -33,7 +33,8 @@ void main() {
   
   // diffuse
   vec3 norm = normalize(aNormal);
-  vec3 lightDir = normalize(light.position - aPos);  
+  vec3 lightDir = normalize(light.position - aPos);
+  // No attentuation?
   float diff = max(dot(norm, lightDir), 0.0);
   vec3 diffuse = light.diffuse * (diff * material.diffuse) * texture(first_texture, aTexCoord).rgb;
   

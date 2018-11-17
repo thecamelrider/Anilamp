@@ -2,7 +2,7 @@ package scenegraph;
 
 import com.jogamp.opengl.GL3;
 
-import anilamp.Light;
+import gameobjects.Light;
 
 public class LightNode extends SGNode {
 

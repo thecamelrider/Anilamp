@@ -34,7 +34,24 @@ public class Anilamp extends JFrame implements ActionListener {
     canvas.addMouseMotionListener(new MyMouseInput(camera));
     canvas.addKeyListener(new MyKeyboardInput(camera));
     getContentPane().add(canvas, BorderLayout.CENTER);
+ 
+    //Create UI buttons and menus
+    buildUI();
     
+    //Create rendering loop
+    addWindowListener(new WindowAdapter() {
+      public void windowClosing(WindowEvent e) {
+        animator.stop();
+        remove(canvas);
+        dispose();
+        System.exit(0);
+      }
+    });
+    animator = new FPSAnimator(canvas, 60);
+    animator.start();
+  }
+  
+  void buildUI() {
     //Create UI
     JMenuBar menuBar=new JMenuBar();
     this.setJMenuBar(menuBar);
@@ -57,18 +74,8 @@ public class Anilamp extends JFrame implements ActionListener {
       b = new JButton("Random Pose");
       b.addActionListener(this);
       p.add(b);
-    this.add(p, BorderLayout.SOUTH);
-    
-    addWindowListener(new WindowAdapter() {
-      public void windowClosing(WindowEvent e) {
-        animator.stop();
-        remove(canvas);
-        dispose();
-        System.exit(0);
-      }
-    });
-    animator = new FPSAnimator(canvas, 60);
-    animator.start();
+      
+      this.add(p, BorderLayout.SOUTH);
   }
   
   public void actionPerformed(ActionEvent e) {

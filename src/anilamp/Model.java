@@ -1,8 +1,12 @@
 package anilamp;
 import gmaths.*;
+import meshes.Mesh;
+
 import java.nio.*;
 import com.jogamp.common.nio.*;
 import com.jogamp.opengl.*;
+
+import gameobjects.Light;
 
 public class Model {
   
@@ -48,6 +52,8 @@ public class Model {
 
   public void render(GL3 gl, Mat4 modelMatrix) {
     Mat4 mvpMatrix = Mat4.multiply(camera.getPerspectiveMatrix(), Mat4.multiply(camera.getViewMatrix(), modelMatrix));
+    
+    //Setting shader uniforms
     shader.use(gl);
     shader.setFloatArray(gl, "model", modelMatrix.toFloatArrayForGLSL());
     shader.setFloatArray(gl, "mvpMatrix", mvpMatrix.toFloatArrayForGLSL());
@@ -58,12 +64,17 @@ public class Model {
     shader.setVec3(gl, "light.ambient", light.getMaterial().getAmbient());
     shader.setVec3(gl, "light.diffuse", light.getMaterial().getDiffuse());
     shader.setVec3(gl, "light.specular", light.getMaterial().getSpecular());
-
+    shader.setFloat(gl, "light.constant",  1.0f);
+    shader.setFloat(gl, "light.linear",    0.09f);
+    shader.setFloat(gl, "light.quadratic", 0.032f);
+    shader.setFloat(gl, "light.cutoff", 0.0f);
+    
     shader.setVec3(gl, "material.ambient", material.getAmbient());
     shader.setVec3(gl, "material.diffuse", material.getDiffuse());
     shader.setVec3(gl, "material.specular", material.getSpecular());
     shader.setFloat(gl, "material.shininess", material.getShininess());  
-
+    
+    //Diffuse map and spec map
     if (textureId1!=null) {
       shader.setInt(gl, "first_texture", 0);  // be careful to match these with GL_TEXTURE0 and GL_TEXTURE1
       gl.glActiveTexture(GL.GL_TEXTURE0);
