@@ -69,7 +69,8 @@ public class Model {
     shader.setFloat(gl, "light.constant",  1.0f);
     shader.setFloat(gl, "light.linear",    0.09f);
     shader.setFloat(gl, "light.quadratic", 0.032f);
-    shader.setFloat(gl, "light.cutoff", 60f);
+    shader.setFloat(gl, "light.cutoff", (float) Math.cos(Math.toRadians(60.0)));
+    shader.setFloat(gl, "light.outercutoff", (float) Math.cos(Math.toRadians(70.0)));
     
     shader.setVec3(gl, "material.ambient", material.getAmbient());
     shader.setVec3(gl, "material.diffuse", material.getDiffuse());

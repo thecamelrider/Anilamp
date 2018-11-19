@@ -29,6 +29,8 @@ public class Anilamp_GLEventListener implements GLEventListener {
 
   /* Initialisation */
   public void init(GLAutoDrawable drawable) {   
+	//Init scene time
+	double startInit = getSeconds();
     GL3 gl = drawable.getGL().getGL3();
     System.err.println("Chosen GLCapabilities: " + drawable.getChosenGLCapabilities());
     gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f); 
@@ -39,6 +41,8 @@ public class Anilamp_GLEventListener implements GLEventListener {
     gl.glEnable(GL.GL_CULL_FACE); // default is 'not enabled'
     gl.glCullFace(GL.GL_BACK);   // default is 'back', assuming CCW
     initialise(gl);
+    double endInit = getSeconds() - startInit;
+    System.out.println("Initialize time: " + endInit);
     startTime = getSeconds();
   }
   
@@ -53,6 +57,8 @@ public class Anilamp_GLEventListener implements GLEventListener {
   /* Draw */
   public void display(GLAutoDrawable drawable) {
     GL3 gl = drawable.getGL().getGL3();
+    //Display FPS
+    System.out.println("FPS: " + drawable.getAnimator().getLastFPS());
     render(gl);
   }
 

@@ -38,7 +38,7 @@ public class Anilamp extends JFrame implements ActionListener {
     //Create UI buttons and menus
     buildUI();
     
-    //Create rendering loop
+    //Handle exit event
     addWindowListener(new WindowAdapter() {
       public void windowClosing(WindowEvent e) {
         animator.stop();
@@ -47,6 +47,8 @@ public class Anilamp extends JFrame implements ActionListener {
         System.exit(0);
       }
     });
+    
+    //Create rendering loop
     animator = new FPSAnimator(canvas, 60);
     animator.start();
   }
