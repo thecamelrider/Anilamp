@@ -12,16 +12,19 @@ public class Light {
   
   private Material material;
   private Vec3 position;
+  private Vec3 direction;
   private Mat4 model;
   private Shader shader;
   private Camera camera;
-    
+  
   public Light(GL3 gl) {
     material = new Material();
     material.setAmbient(0.2f, 0.2f, 0.2f);
     material.setDiffuse(0.8f, 0.8f, 0.8f);
     material.setSpecular(0.8f, 0.8f, 0.8f);
     position = new Vec3(3f,2f,1f);
+    direction = new Vec3(0f, -1f, 0f);
+    
     model = new Mat4(1);
     shader = new Shader(gl, "shaders/vs_light_01.txt", "shaders/fs_light_01.txt");
     fillBuffers(gl);
@@ -43,6 +46,13 @@ public class Light {
     return position;
   }
   
+  public void setDirection(Vec3 v) {
+	  direction = v;
+  }
+  public Vec3 getDirection() {
+	return direction;
+  } 
+
   public void setMaterial(Material m) {
     material = m;
   }
@@ -138,6 +148,5 @@ public class Light {
     gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, elementBufferId[0]);
     gl.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, Integer.BYTES * indices.length, ib, GL.GL_STATIC_DRAW);
     gl.glBindVertexArray(0);
-  } 
-
+  }
 }

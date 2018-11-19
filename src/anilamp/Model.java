@@ -60,14 +60,16 @@ public class Model {
     
     shader.setVec3(gl, "viewPos", camera.getPosition());
 
+    shader.setVec3(gl, "light.direction", light.getDirection());
     shader.setVec3(gl, "light.position", light.getPosition());
     shader.setVec3(gl, "light.ambient", light.getMaterial().getAmbient());
     shader.setVec3(gl, "light.diffuse", light.getMaterial().getDiffuse());
     shader.setVec3(gl, "light.specular", light.getMaterial().getSpecular());
+    
     shader.setFloat(gl, "light.constant",  1.0f);
     shader.setFloat(gl, "light.linear",    0.09f);
     shader.setFloat(gl, "light.quadratic", 0.032f);
-    shader.setFloat(gl, "light.cutoff", 0.0f);
+    shader.setFloat(gl, "light.cutoff", 60f);
     
     shader.setVec3(gl, "material.ambient", material.getAmbient());
     shader.setVec3(gl, "material.diffuse", material.getDiffuse());
