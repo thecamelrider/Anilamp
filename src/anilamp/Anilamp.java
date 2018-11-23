@@ -48,7 +48,7 @@ public class Anilamp extends JFrame implements ActionListener {
       }
     });
     
-    //Create rendering loop
+    //Create rendering loop at 60 FPS
     animator = new FPSAnimator(canvas, 60);
     animator.start();
   }

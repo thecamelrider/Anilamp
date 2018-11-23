@@ -36,6 +36,16 @@ public class Shader {
     gl.glUseProgram(ID);
   }
   
+  //uniform blocks
+  public void bindUniformBlockToIndex(GL3 gl, String name, int index) {
+	  //Set id of specific uniform block
+	  int lightBlock = gl.glGetUniformBlockIndex(ID, "Lights");
+	  
+	  //ID of uniform buffer object
+	  gl.glUniformBlockBinding(ID, lightBlock, index);
+  }
+  
+  //uniforms
   public void setInt(GL3 gl, String name, int value) {
     int location = gl.glGetUniformLocation(ID, name);
     gl.glUniform1i(location, value);

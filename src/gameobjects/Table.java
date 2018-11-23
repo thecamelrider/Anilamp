@@ -113,8 +113,4 @@ public class Table extends SceneObject {
 		tableRoot.print(0, false);
 		tableRoot.update();
 	}
-	
-	public void render(GL3 gl) {
-		tableRoot.draw(gl);
-	}
 }

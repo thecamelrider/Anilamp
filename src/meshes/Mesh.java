@@ -5,30 +5,26 @@ import com.jogamp.common.nio.*;
 import com.jogamp.opengl.*;
 
 public class Mesh {
-  //Mesh public attributes
+  //Mesh data
   private float[] vertices;
-  private int[] indices;
+  public int[] indices;
   private int[] uvs;
   
   private int vertexStride = 8;
   private int vertexXYZFloats = 3;
   private int vertexNormalFloats = 3;
   private int vertexTexFloats = 2;
-  
-  private int[] vertexBufferId = new int[1];
-  private int[] vertexArrayId = new int[1];
-  private int[] elementBufferId = new int[1];
+
+  //Should a mesh class hold its own buffer handlers?
+  //Probably not.
+  public int[] vertexBufferId = new int[1];
+  public int[] vertexArrayId = new int[1];
+  public int[] elementBufferId = new int[1];
   
   public Mesh(GL3 gl, float[] vertices, int[] indices) {
     this.vertices = vertices;
     this.indices = indices;
     fillBuffers(gl);
-  }
-  
-  public void render(GL3 gl) {
-    gl.glBindVertexArray(vertexArrayId[0]);
-    gl.glDrawElements(GL.GL_TRIANGLES, indices.length, GL.GL_UNSIGNED_INT, 0);
-    gl.glBindVertexArray(0);
   }
 
   private void fillBuffers(GL3 gl) {

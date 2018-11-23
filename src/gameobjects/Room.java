@@ -27,10 +27,4 @@ public class Room {
 			NameNode wall = new NameNode("Wall");
 		
 	}
-
-	public void render(GL3 gl) {
-		// TODO Auto-generated method stub
-		floorModel.render(gl);
-		//wallModel.render(gl);
-	}
 }

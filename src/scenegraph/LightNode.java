@@ -2,12 +2,12 @@ package scenegraph;
 
 import com.jogamp.opengl.GL3;
 
-import gameobjects.Light;
+import gameobjects.LightObject;
 
 public class LightNode extends SGNode {
 
-	Light light;
-	public LightNode(String name, Light light) {
+	LightObject light;
+	public LightNode(String name, LightObject light) {
 		super(name);
 		this.light = light;
 	}

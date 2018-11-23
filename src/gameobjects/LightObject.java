@@ -8,7 +8,7 @@ import anilamp.Camera;
 import anilamp.Material;
 import anilamp.Shader;
   
-public class Light {
+public class LightObject {
   
   private Material material;
   private Vec3 position;
@@ -17,7 +17,7 @@ public class Light {
   private Shader shader;
   private Camera camera;
   
-  public Light(GL3 gl) {
+  public LightObject(GL3 gl) {
     material = new Material();
     material.setAmbient(0.2f, 0.2f, 0.2f);
     material.setDiffuse(0.8f, 0.8f, 0.8f);

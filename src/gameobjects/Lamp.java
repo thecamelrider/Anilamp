@@ -31,9 +31,9 @@ public class Lamp extends SceneObject{
 	
 	//Rendered subobjects
 	private NameNode lampRoot;
-	private Light spotlight;
+	private LightObject spotlight;
 	
-	public Lamp(float legHeights, float headLength, Model lampLegCube, Model lampHeadCube, Light spotlight) {
+	public Lamp(float legHeights, float headLength, Model lampLegCube, Model lampHeadCube, LightObject spotlight) {
 		this.legHeights = legHeights;
 		this.headLength = headLength;
 		
@@ -161,10 +161,6 @@ public class Lamp extends SceneObject{
 
 	}
 	
-	public void render(GL3 gl) {
-	    lampRoot.draw(gl);
-	}
-
 	@Override
 	public Vec3 getPosition() {
 		Vec3 positionk;

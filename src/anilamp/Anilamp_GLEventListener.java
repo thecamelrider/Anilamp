@@ -10,6 +10,7 @@ import com.jogamp.opengl.*;
 import com.jogamp.opengl.util.*;
 import com.jogamp.opengl.util.awt.*;
 import com.jogamp.opengl.util.glsl.*;
+import com.sun.scenario.effect.impl.Renderer;
 
 import gameobjects.*;
 
@@ -32,15 +33,14 @@ public class Anilamp_GLEventListener implements GLEventListener {
 	//Init scene time
 	double startInit = getSeconds();
     GL3 gl = drawable.getGL().getGL3();
-    System.err.println("Chosen GLCapabilities: " + drawable.getChosenGLCapabilities());
-    gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f); 
-    gl.glClearDepth(1.0f);
-    gl.glEnable(GL.GL_DEPTH_TEST);
-    gl.glDepthFunc(GL.GL_LESS);
-    gl.glFrontFace(GL.GL_CCW);    // default is 'CCW'
-    gl.glEnable(GL.GL_CULL_FACE); // default is 'not enabled'
-    gl.glCullFace(GL.GL_BACK);   // default is 'back', assuming CCW
+    
+    //Scene renderer simply takes a huge array of meshes and renders them in series
+    sceneRenderer = new SceneRenderer(drawable);	//Sets up scene renderer
+
+    //Create all scene objects (Make sure to add to scene renderer!)
     initialise(gl);
+    
+    //Calc initialize time
     double endInit = getSeconds() - startInit;
     System.out.println("Initialize time: " + endInit);
     startTime = getSeconds();
@@ -65,7 +65,6 @@ public class Anilamp_GLEventListener implements GLEventListener {
   /* Clean up memory, if necessary */
   public void dispose(GLAutoDrawable drawable) {
     GL3 gl = drawable.getGL().getGL3();
-    light.dispose(gl);
     floor.dispose(gl);
     sphere.dispose(gl);
     cube.dispose(gl);
@@ -81,7 +80,8 @@ public class Anilamp_GLEventListener implements GLEventListener {
   
   private boolean animation = false;
   private double savedTime = 0;
-   
+  private SceneRenderer sceneRenderer;
+  
   public void startAnimation() {
     animation = true;
     startTime = getSeconds()-savedTime;
@@ -109,11 +109,15 @@ public class Anilamp_GLEventListener implements GLEventListener {
   private Light light;
   private Room room;
   
+  private int[] uboBuffers;
+  
   //Save ref to nodes
   private boolean animating, posing, jumping;
     
   private void initialise(GL3 gl) {
-    createRandomNumbers();
+	//On initalize graphics
+	createRandomNumbers();
+	
     //Default texture
     int[] textureId0 = TextureLibrary.loadTexture(gl, "textures/chequerboard.jpg");
     //Shitty wood
@@ -129,43 +133,41 @@ public class Anilamp_GLEventListener implements GLEventListener {
     int[] textureId7 = TextureLibrary.loadTexture(gl, "textures/table/WoodFlooring044_COL_3K.jpg");   
     
     //Objects
-    light = new Light(gl);
-    light.setCamera(camera);
+    light = new Light();
+    Light spotlight = new Light();
     
-    //For lamp
-    Light spotlight = new Light(gl);
-    spotlight.setCamera(camera);
-    //
+    //Cube shader
+    Shader shader = new Shader(gl, "shaders/vs_cube_04.txt", "shaders/fs_cube_04.txt");
+    shader.use(gl);
     
     //Room mesh and material
     Mesh mesh = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
-    Shader shader = new Shader(gl, "shaders/vs_cube_04.txt", "shaders/fs_cube_04.txt");
     Material material = new Material(new Vec3(0.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
     Mat4 modelMatrix = Mat4Transform.scale(24,1f,24);
-    floor = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId5);
+    floor = new Model(gl, shader, material, modelMatrix, mesh, textureId5);
     
     mesh = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
     shader = new Shader(gl, "shaders/vs_cube_04.txt", "shaders/fs_cube_04.txt");
     material = new Material(new Vec3(0.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
     modelMatrix = Mat4Transform.scale(4f,1f,4f);
-    Model wall = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId4);
+    Model wall = new Model(gl, shader, material, modelMatrix, mesh, textureId4);
     
     //Some weird thing
     mesh = new Mesh(gl, Sphere.vertices.clone(), Sphere.indices.clone());
     shader = new Shader(gl, "shaders/vs_cube_04.txt", "shaders/fs_cube_04.txt");
     material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
     modelMatrix = Mat4.multiply(Mat4Transform.scale(4,4,4), Mat4Transform.translate(0,0.5f,0));
-    sphere = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId3, textureId4);
+    sphere = new Model(gl, shader, material, modelMatrix, mesh, textureId3, textureId4);
     
     //Wooden cubes
     mesh = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
     shader = new Shader(gl, "shaders/vs_cube_04.txt", "shaders/fs_cube_04.txt");
     material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
     modelMatrix = Mat4.multiply(Mat4Transform.scale(4,4,4), Mat4Transform.translate(0,0.5f,0));
-    cube2 = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId3, textureId4);
-    cube = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId5, textureId6); 
+    cube2 = new Model(gl, shader, material, modelMatrix, mesh, textureId3, textureId4);
+    cube = new Model(gl, shader, material, modelMatrix, mesh, textureId5, textureId6); 
     
-    woodCube = new Model(gl, camera, light, shader, material, modelMatrix, mesh, textureId7);
+    woodCube = new Model(gl, shader, material, modelMatrix, mesh, textureId7);
     //Setting up all unit models
     
     //Create wall and floors
@@ -180,13 +182,10 @@ public class Anilamp_GLEventListener implements GLEventListener {
   }
   
   private void render(GL3 gl) {
-    gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-    
-    //light.setPosition(getLightPosition());  // changing light position each frame
-    light.render(gl);
-    room.render(gl);
-    table.render(gl);
-    lamp.render(gl);
+ 
+	  //Update position of all root nodes and then render all models
+	sceneRenderer.updateTransforms();
+    sceneRenderer.render(gl);
     
     if(jumping)
     	updateJumpAnim();
