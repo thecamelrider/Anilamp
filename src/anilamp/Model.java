@@ -24,18 +24,6 @@ public class Model {
     this.shader = shader;
     this.textureId1 = textureId1;
     this.textureId2 = textureId2;
-    
-    //Should probably be handled somewhere else
-    uint uniformBlockIndexRed    = glGetUniformBlockIndex(shaderRed.ID, "Matrices");
-    unsined int uniformBlockIndexGreen  = glGetUniformBlockIndex(shaderGreen.ID, "Matrices");
-    unsigned int uniformBlockIndexBlue   = glGetUniformBlockIndex(shaderBlue.ID, "Matrices");
-    unsigned int uniformBlockIndexYellow = glGetUniformBlockIndex(shaderYellow.ID, "Matrices");  
-      
-    glUniformBlockBinding(shaderRed.ID,    uniformBlockIndexRed, 0);
-    glUniformBlockBinding(shaderGreen.ID,  uniformBlockIndexGreen, 0);
-    glUniformBlockBinding(shaderBlue.ID,   uniformBlockIndexBlue, 0);
-    glUniformBlockBinding(shaderYellow.ID, uniformBlockIndexYellow, 0);
-
   }
   
   public Model(Shader shader, Material material, Mat4 modelMatrix, Mesh mesh, int[] textureId1) {

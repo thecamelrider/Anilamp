@@ -102,6 +102,10 @@ public class Anilamp_GLEventListener implements GLEventListener {
   //Scene objects
   private Model floor, sphere, cube, cube2, woodCube;
   
+  //Renderables
+  private Model[] myModels;
+  
+  //Extra stuff
   private Camera camera;
   private Mat4 perspective;
   private Lamp lamp;
@@ -115,7 +119,8 @@ public class Anilamp_GLEventListener implements GLEventListener {
   private boolean animating, posing, jumping;
     
   private void initialise(GL3 gl) {
-	//On initalize graphics
+	//Initialize scene
+	//Init randoms
 	createRandomNumbers();
 	
     //Default texture
@@ -132,42 +137,57 @@ public class Anilamp_GLEventListener implements GLEventListener {
     //Wood flooring
     int[] textureId7 = TextureLibrary.loadTexture(gl, "textures/table/WoodFlooring044_COL_3K.jpg");   
     
-    //Objects
+    //Create shaders
+    Shader cubeShader = new Shader(gl, "shaders/phong/vs_cube.txt", "shaders/phong/fs_cube.txt");
+    Shader colorShader = new Shader(gl, "shaders/phong/vs_cube.txt", "shaders/phong/fs_cube.txt");
+    
+    //Add shaders to renderer
+    sceneRenderer.addShader(cubeShader);
+    sceneRenderer.camera = camera;
+    
+    //Add lights to scene renderer
     light = new Light();
     Light spotlight = new Light();
+    Light directionLight = new Light();
+    
+    sceneRenderer.addLight(directionLight, Light.Types.DIRECTION);
+    directionLight.ambient = new Vec3(0, 0, 0);
+    directionLight.diffuse = new Vec3(0.2f, 0.1f, 0.4f);
+    directionLight.specular = new Vec3(0.2f, 0.2f, 0.2f);
+    directionLight.direction = new Vec3(0, -0.2f, 0.8f);
     
     //Cube shader
-    Shader shader = new Shader(gl, "shaders/vs_cube_04.txt", "shaders/fs_cube_04.txt");
+    Shader shader = new Shader(gl, "shaders/phong/vs_cube.txt", "shaders/phong/fs_cube.txt");
     shader.use(gl);
     
     //Room mesh and material
     Mesh mesh = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
     Material material = new Material(new Vec3(0.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
     Mat4 modelMatrix = Mat4Transform.scale(24,1f,24);
-    floor = new Model(gl, shader, material, modelMatrix, mesh, textureId5);
+    floor = new Model(shader, material, modelMatrix, mesh, textureId5);
     
     mesh = new Mesh(gl, TwoTriangles.vertices.clone(), TwoTriangles.indices.clone());
-    shader = new Shader(gl, "shaders/vs_cube_04.txt", "shaders/fs_cube_04.txt");
+    shader = new Shader(gl, "shaders/phong/vs_cube.txt", "shaders/phong/fs_cube.txt");
     material = new Material(new Vec3(0.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
     modelMatrix = Mat4Transform.scale(4f,1f,4f);
-    Model wall = new Model(gl, shader, material, modelMatrix, mesh, textureId4);
+    Model wall = new Model(shader, material, modelMatrix, mesh, textureId4);
     
     //Some weird thing
     mesh = new Mesh(gl, Sphere.vertices.clone(), Sphere.indices.clone());
-    shader = new Shader(gl, "shaders/vs_cube_04.txt", "shaders/fs_cube_04.txt");
+    shader = new Shader(gl, "shaders/phong/vs_cube.txt", "shaders/phong/fs_cube.txt");
     material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
     modelMatrix = Mat4.multiply(Mat4Transform.scale(4,4,4), Mat4Transform.translate(0,0.5f,0));
-    sphere = new Model(gl, shader, material, modelMatrix, mesh, textureId3, textureId4);
+    sphere = new Model(shader, material, modelMatrix, mesh, textureId3, textureId4);
     
     //Wooden cubes
     mesh = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
-    shader = new Shader(gl, "shaders/vs_cube_04.txt", "shaders/fs_cube_04.txt");
+    shader = new Shader(gl, "shaders/phong/vs_cube.txt", "shaders/phong/fs_cube.txt");
     material = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
     modelMatrix = Mat4.multiply(Mat4Transform.scale(4,4,4), Mat4Transform.translate(0,0.5f,0));
-    cube2 = new Model(gl, shader, material, modelMatrix, mesh, textureId3, textureId4);
-    cube = new Model(gl, shader, material, modelMatrix, mesh, textureId5, textureId6); 
+    cube2 = new Model(shader, material, modelMatrix, mesh, textureId3, textureId4);
+    cube = new Model(shader, material, modelMatrix, mesh, textureId5, textureId6); 
     
-    woodCube = new Model(gl, shader, material, modelMatrix, mesh, textureId7);
+    woodCube = new Model(shader, material, modelMatrix, mesh, textureId7);
     //Setting up all unit models
     
     //Create wall and floors
@@ -178,15 +198,16 @@ public class Anilamp_GLEventListener implements GLEventListener {
     table.setPosition(0, 0, 0);
     
     //Create lamp
-    lamp = new Lamp(3, 0.7f, cube, cube2, spotlight);
+    //lamp = new Lamp(3, 0.7f, cube, cube2, spotlight);
+    myModels = new Model[] {woodCube, floor}; 
   }
   
   private void render(GL3 gl) {
  
-	  //Update position of all root nodes and then render all models
-	sceneRenderer.updateTransforms();
-    sceneRenderer.render(gl);
-    
+	//Update position of all root nodes and then render all models
+	//sceneRenderer.updateTransforms();
+    sceneRenderer.render(gl, myModels);
+    sceneRenderer.render(gl, rootNodes);
     if(jumping)
     	updateJumpAnim();
     if(posing)

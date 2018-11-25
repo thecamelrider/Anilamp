@@ -7,7 +7,7 @@ struct Material {
   float shininess;
   sampler2D diffuse;
   sampler2D specular; 
-}
+};
   
 struct DirLight {
     vec3 direction;

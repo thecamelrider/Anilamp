@@ -10,6 +10,7 @@ uniform vec3 viewPos;
 uniform sampler2D diff_texture;
 uniform sampler2D ref_texture;
 
+/*
 layout(std140) uniform Light {
   vec3 position;
   vec3 direction;
@@ -24,7 +25,7 @@ layout(std140) uniform Light {
   float linear;
   float quadratic;
 };
-
+*/
 uniform Light light;  
 
 struct Material {
