@@ -148,7 +148,8 @@ public class SceneRenderer {
 		//Extract models from root nodes
 		
 	}
-	//Sexy Pure function, not pure anymore :(
+	
+	//Not pure anymore :(
 	public void render(GL3 gl, Model[] models) {
 		//This is gonna be moved outta here
 		updatePV(camera.getPerspectiveMatrix(), camera.getViewMatrix());

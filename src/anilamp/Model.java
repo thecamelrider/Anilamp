@@ -10,7 +10,11 @@ import gameobjects.LightObject;
 
 public class Model {
   public Shader shader;
+  
+  public Mat4 worldMatrix;
   public Mat4 modelMatrix;
+  public Mat4 fullMatrix;
+  
   public Mesh mesh;
   public int[] textureId1; 
   public int[] textureId2; 
@@ -20,7 +24,9 @@ public class Model {
   public Model(Shader shader, Material material, Mat4 modelMatrix, Mesh mesh, int[] textureId1, int[] textureId2) {
     this.mesh = mesh;
     this.material = material;
+    //World matrix just replaces model matrix in teacher's code
     this.modelMatrix = modelMatrix;
+    this.worldMatrix = modelMatrix;
     this.shader = shader;
     this.textureId1 = textureId1;
     this.textureId2 = textureId2;
