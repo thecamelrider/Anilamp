@@ -10,6 +10,7 @@ import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
 import anilamp.Light.Types;
 import gmaths.Mat4;
 import javafx.geometry.VPos;
+import jogamp.common.Debug;
 import scenegraph.SGNode;
 
 public class SceneRenderer {
@@ -19,8 +20,8 @@ public class SceneRenderer {
 	//Lights
 	private Light dirLight;
 	private Light spotLight;
-	private Light[] lights;
 	private Light[] pointLights;
+	private Light[] lights;
 	private int numLights = 0;
 	private final int MAX_LIGHTS = 5;
 	
@@ -60,9 +61,6 @@ public class SceneRenderer {
 		
 	}
 	
-	public void addSceneObject() {
-		
-	}
 	public void addLight(Light light, Light.Types lightType) {
 		//Update UBO
 		
@@ -103,11 +101,12 @@ public class SceneRenderer {
         shader.setVec3(gl, "dirLight.diffuse", dirLight.diffuse);
         shader.setVec3(gl, "dirLight.specular", dirLight.specular);
         
+        shader.setFloat(gl, "numPointLights", numLights);
         //For each pointlight
         for(int i = 0; i < numLights; i++) {
         	String pointLightID = "pointLights[" + i + "]";
         	Light ptLight = pointLights[i];
-        	
+        	        	
         	shader.setVec3(gl, pointLightID + ".position", ptLight.position);
         	shader.setVec3(gl, pointLightID + ".ambient", ptLight.ambient);
         	shader.setVec3(gl, pointLightID + ".diffuse", ptLight.diffuse);
@@ -126,11 +125,6 @@ public class SceneRenderer {
 			SGNode rootNode = roots[i];
 			rootNode.update();
 		}
-		
-	}
-	
-	public void render(GL3 gl, SGNode[] rootNodes) {
-		//Extract models from root nodes
 		
 	}
 	
@@ -159,28 +153,31 @@ public class SceneRenderer {
 		    //-----------------------------------------
 		    
 		    //Set Material props
-		    shader.setVec3(gl, "material.ambient", model.material.getAmbient());
-		    shader.setVec3(gl, "material.diffuse", model.material.getDiffuse());
-		    shader.setVec3(gl, "material.specular", model.material.getSpecular());
+		    //shader.setVec3(gl, "material.ambient", model.material.getAmbient());
+		    //shader.setVec3(gl, "material.diffuse", model.material.getDiffuse());
+		    //shader.setVec3(gl, "material.specular", model.material.getSpecular());
 		    shader.setFloat(gl, "material.shininess", model.material.getShininess());  
 		    
 		    //Diffuse map and spec map
 		    if (model.textureId1!=null) {
-		      shader.setInt(gl, "first_texture", 0);  // be careful to match these with GL_TEXTURE0 and GL_TEXTURE1
+		      shader.setInt(gl, "material.diffuse", 0);  // be careful to match these with GL_TEXTURE0 and GL_TEXTURE1
 		      gl.glActiveTexture(GL.GL_TEXTURE0);
 		      gl.glBindTexture(GL.GL_TEXTURE_2D, model.textureId1[0]);
 		    }
 		    
 		    if (model.textureId2!=null) {
-		      shader.setInt(gl, "second_texture", 1);
+		      shader.setInt(gl, "material.specular", 1);
 		      gl.glActiveTexture(GL.GL_TEXTURE1);
 		      gl.glBindTexture(GL.GL_TEXTURE_2D, model.textureId2[0]);
 		    }
 		    
 		    //Foreach instance of model
 		    for(SGNode transform : model.transforms) {
-			    Mat4 mvpMatrix = Mat4.multiply(pv, model.modelMatrix);
-			    shader.setFloatArray(gl, "model", model.modelMatrix.toFloatArrayForGLSL());
+		    	Mat4 modelMatrix = Mat4.multiply(transform.worldTransform, model.modelMatrix);
+		    	
+			    Mat4 mvpMatrix = Mat4.multiply(pv, modelMatrix);
+			    //Combine local model transform and world transform from scene graph
+			    shader.setFloatArray(gl, "model", modelMatrix.toFloatArrayForGLSL());
 			    shader.setFloatArray(gl, "mvpMatrix", mvpMatrix.toFloatArrayForGLSL());
 			    
 			    //Render mesh
@@ -188,7 +185,7 @@ public class SceneRenderer {
 		        gl.glDrawElements(GL.GL_TRIANGLES, model.mesh.indices.length, GL.GL_UNSIGNED_INT, 0);
 		        gl.glBindVertexArray(0);
 		    }
-	    }
+	    }	    
 	}
 
 	public void addShader(Shader shader) {

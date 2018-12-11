@@ -12,11 +12,5 @@ public class ModelNode extends SGNode {
     super(name);
     model = m;
     model.transforms.add(this);
-  }
-  
-  @Override
-	protected void update(Mat4 t) {
-		this.worldTransform = t;
-	}
-  
+  }  
 }

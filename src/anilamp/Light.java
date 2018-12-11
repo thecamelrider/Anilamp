@@ -13,9 +13,9 @@ public class Light {
     public Vec3 specular;
 
 	//Attenuation
-	public float constant = 1.0f;
-    public float linear = 0.09f;
-    public float quadratic = 0.032f;
+	public float constant = 0.00000000000001f;
+    public float linear = 0.0000000000000001f;
+    public float quadratic = 0.00000000000001f;
 	 
     //Spotlight params
     public float cutoff = (float) Math.cos(Math.toRadians(60.0));

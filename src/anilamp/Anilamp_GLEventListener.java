@@ -1,9 +1,7 @@
 package anilamp;
 import gmaths.*;
-import meshes.Mesh;
-import meshes.Sphere;
-import meshes.TwoTriangles;
-import scenegraph.SGNode;
+import meshes.*;
+import scenegraph.*;
 
 import java.nio.*;
 import java.util.ArrayList;
@@ -13,7 +11,6 @@ import com.jogamp.opengl.*;
 import com.jogamp.opengl.util.*;
 import com.jogamp.opengl.util.awt.*;
 import com.jogamp.opengl.util.glsl.*;
-import com.sun.scenario.effect.impl.Renderer;
 
 import gameobjects.*;
 
@@ -39,7 +36,7 @@ public class Anilamp_GLEventListener implements GLEventListener {
     
     //Scene renderer simply takes a huge array of meshes and renders them in series
     sceneRenderer = new SceneRenderer(drawable);	//Sets up scene renderer
-    initialise(gl);	//Creates all scene objects
+    initScene(gl);	//Creates all scene objects
     
     //Calc initialize time
     double endInit = getSeconds() - startInit;
@@ -47,6 +44,12 @@ public class Anilamp_GLEventListener implements GLEventListener {
     startTime = getSeconds();
     
     //Started
+    int size = 0;
+    for (Model model : myModels) {
+    	//Add to size
+    	size += model.transforms.size();
+    }
+    System.out.println("Num objects = " + myModels.size());
     System.out.println("INIT SUCCESS!");
   }
   
@@ -63,19 +66,17 @@ public class Anilamp_GLEventListener implements GLEventListener {
     GL3 gl = drawable.getGL().getGL3();
     
     //Display FPS
-    System.out.println("FPS: " + drawable.getAnimator().getLastFPS());
+    //System.out.println("FPS: " + drawable.getAnimator().getLastFPS());
     render(gl);		//Using scenerenderer
   }
 
   /* Clean up memory, if necessary */
   public void dispose(GLAutoDrawable drawable) {
     GL3 gl = drawable.getGL().getGL3();
-    floor.dispose(gl);
-    sphere.dispose(gl);
-    cube.dispose(gl);
-    cube2.dispose(gl);
-  }
-  
+    for (Model model : myModels) {
+    	model.dispose(gl);
+    	}
+    }
   
   // ***************************************************
   /* INTERACTION
@@ -107,16 +108,14 @@ public class Anilamp_GLEventListener implements GLEventListener {
   //Scene objects for rendering/updating
   private ArrayList<SGNode> myRootNodes = new ArrayList<SGNode>();
   private ArrayList<Model> myModels = new ArrayList<Model>();
-  
-  private Model floor, sphere, cube, cube2, woodCube;
-  
+    
   //Important scene objects
   private Camera camera;
   
   private Mat4 perspective;
   private Lamp lamp;
   private Table table;
-  private Light light;
+  private Light sun;
   private Room room;
   
   private int[] uboBuffers;
@@ -124,7 +123,7 @@ public class Anilamp_GLEventListener implements GLEventListener {
   //Save ref to nodes
   private boolean animating, posing, jumping;
     
-  private void initialise(GL3 gl) {
+  private void initScene(GL3 gl) {
 	//Initialize scene
 	//Init randoms
 	createRandomNumbers();
@@ -151,15 +150,31 @@ public class Anilamp_GLEventListener implements GLEventListener {
     sceneRenderer.addShader(cubeShader);
         
     //Add lights to scene renderer
-    light = new Light();
-    Light spotlight = new Light();
-    Light directionLight = new Light();
-    directionLight.ambient = new Vec3(0, 0, 0);
-    directionLight.diffuse = new Vec3(0.2f, 0.1f, 0.4f);
-    directionLight.specular = new Vec3(0.2f, 0.2f, 0.2f);
-    directionLight.direction = new Vec3(0, -0.2f, 0.8f);
+    sun = new Light();
+    Light sun = new Light();
+    sun.ambient = new Vec3(0, 0, 0);
+    sun.diffuse = new Vec3(0.2f, 0.1f, 0.4f);
+    sun.specular = new Vec3(0.2f, 0.2f, 0.2f);
+    sun.direction = new Vec3(0, -0.2f, 0.8f);
+    sun.position = new Vec3(0, 15, 0);
     
-    sceneRenderer.addLight(directionLight, Light.Types.DIRECTION);
+    //Light spotlight = new Light();
+    
+    Light pointLight = new Light();
+    pointLight.ambient = new Vec3(1, 1, 1);
+    pointLight.diffuse = new Vec3(1, 1, 1);
+    pointLight.specular = new Vec3(1, 1, 1);
+    pointLight.position = new Vec3(0, 5, 0);
+    
+    Light pointLight2 = new Light();
+    pointLight2.ambient = new Vec3(1, 1, 1);
+    pointLight2.diffuse = new Vec3(0.3f, 0.8f, 0.3f);
+    pointLight2.specular = new Vec3(1, 1, 1);
+    pointLight2.position = new Vec3(5, 5, 0);
+    
+    sceneRenderer.addLight(pointLight2, Light.Types.POINTLIGHT);
+    sceneRenderer.addLight(pointLight, Light.Types.POINTLIGHT);
+    sceneRenderer.addLight(sun, Light.Types.DIRECTION);
     
     //Reused parts
     //Create all the meshes, shaders and mats
@@ -167,46 +182,67 @@ public class Anilamp_GLEventListener implements GLEventListener {
     Mesh sphereMesh = new Mesh(gl, Sphere.vertices.clone(), Sphere.indices.clone());
     Mesh cubeMesh = new Mesh(gl, Cube.vertices.clone(), Cube.indices.clone());
     Shader shader = new Shader(gl, "shaders/phong/vs_cube.txt", "shaders/phong/fs_cube.txt");
-    Material wallMat = new Material(new Vec3(0.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
-    Material woodMat = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
+   // Material standardMat = new Material(new Vec3(0.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.81f), new Vec3(0.3f, 0.3f, 0.3f), 32.0f);
+    Material standardMat = new Material(new Vec3(1.0f, 0.5f, 0.31f), new Vec3(1.0f, 0.5f, 0.31f), new Vec3(0.5f, 0.5f, 0.5f), 32.0f);
     
     //Instances
+    Model floorModel, wallModel, sphere, cube, cube2, woodCube, stoneCube, plasterCube;
+    
     //Floor model
-    Mat4 modelMatrix = Mat4Transform.scale(24,1f,24);
-    floor = new Model(shader, woodMat, modelMatrix, planeMesh, textureId5);
+    Mat4 modelMatrix = Mat4Transform.scale(24f,1f,24f);
+    floorModel = new Model(shader, standardMat, modelMatrix, planeMesh, textureId5);
+    
     //Wall model
-    modelMatrix = Mat4Transform.scale(4f,1f,4f);
-    Model wall = new Model(shader, woodMat, modelMatrix, cubeMesh, textureId4);
-    //Random sphere model?
-    modelMatrix = Mat4.multiply(Mat4Transform.scale(4,4,4), Mat4Transform.translate(0,0.5f,0));
-    sphere = new Model(shader, woodMat, modelMatrix, sphereMesh, textureId3, textureId4);
-    //Wooden cube models
-    modelMatrix = Mat4.multiply(Mat4Transform.scale(4,4,4), Mat4Transform.translate(0,0.5f,0));
-    cube2 = new Model(shader, woodMat, modelMatrix, cubeMesh, textureId3, textureId4);
-    cube = new Model(shader, woodMat, modelMatrix, cubeMesh, textureId5, textureId6); 
-    woodCube = new Model(shader, woodMat, modelMatrix, cubeMesh, textureId7);
+    modelMatrix = Mat4.multiply(Mat4Transform.scale(10f,1f,10f), Mat4Transform.rotateAroundZ(90));
+    wallModel = new Model(shader, standardMat, modelMatrix, planeMesh, textureId3, textureId4);
+    
+    //Unit spheres
+    modelMatrix = Mat4.multiply(Mat4Transform.scale(1,1,1), Mat4Transform.translate(0,0.5f,0));
+    sphere = new Model(shader, standardMat, modelMatrix, sphereMesh, textureId3, textureId4);
+    //Unit cubes
+    modelMatrix = Mat4.multiply(Mat4Transform.scale(1,1,1), Mat4Transform.translate(0,0.5f,0));
+    
+    plasterCube = new Model(shader, standardMat, modelMatrix, cubeMesh, textureId3, textureId4);
+    stoneCube = new Model(shader, standardMat, modelMatrix, cubeMesh, textureId5, textureId6); 
+    woodCube = new Model(shader, standardMat, modelMatrix, cubeMesh, textureId7);
     
     //Complex objects
     //Create room, table and lamp
-    room = new Room(48, 24, 18, floor);
-    table = new Table(6, 10, 5, woodCube);
-    table.setPosition(0, 0, 0);    
-    lamp = new Lamp(3f, 0.7f, cube, cube2, spotlight);
+    room = new Room(48, 24, 18, floorModel, wallModel);
+    table = new Table(6.1f, 7.62f, 6.1f, 1, woodCube);
+    
+    //table.setPosition(0, 0, 0);
+    lamp = new Lamp(1.5f, 0.3f, 0.7f, stoneCube, plasterCube, new Light());
 
     //Add models to database
     myModels.add(woodCube);
-    myModels.add(floor);
-    myModels.add(cube);
-    myModels.add(cube2);
+    myModels.add(stoneCube);
+    myModels.add(plasterCube);
+    myModels.add(floorModel);
+    myModels.add(wallModel);
+    myModels.add(sphere);
     
     //Add complex objects to scene
-    addObjectsToScene(new SceneObject[] {lamp, table});
+    addObjectsToScene(new SceneObject[] {lamp, table, room});
+    
+    //Add test object
+    addSimpleObject(sphere, new Vec3(1, 7, 1));
   }
   
-  private void addModels(Model[] models) {
-	  //Put model into node
+  private void addSimpleObject(Model model, Vec3 position) {
+	  //Create a node for a test object
+	  NameNode rootNode = new NameNode("small object");
+	  TransformNode posNode = new TransformNode("position", Mat4Transform.translate(position));
+	  ModelNode modelNode = new ModelNode("Model", model);
+			  
+	  rootNode.addChild(posNode);
+	  	posNode.addChild(modelNode);
+	  	
+	  	rootNode.update();
 	  
+	  myRootNodes.add(rootNode);
   }
+  
   private void addObjectsToScene(SceneObject[] sceneObjects) {
 	  //store all root nodes to list
 	  for(SceneObject sceneObj : sceneObjects) {

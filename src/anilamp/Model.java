@@ -27,11 +27,14 @@ public class Model {
   
   public Model(Shader shader, Material material, Mat4 modelMatrix, Mesh mesh, int[] textureId1, int[] textureId2) {
     this.mesh = mesh;
-    this.material = material;
+    
     //World matrix just replaces model matrix in teacher's code
     this.modelMatrix = modelMatrix;
-    this.worldMatrix = modelMatrix;
+    //this.worldMatrix = modelMatrix;
+    
+    //Shader props
     this.shader = shader;
+    this.material = material;
     this.textureId1 = textureId1;
     this.textureId2 = textureId2;
   }

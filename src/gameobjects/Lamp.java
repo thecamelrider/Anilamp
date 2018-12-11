@@ -25,6 +25,7 @@ public class Lamp extends SceneObject{
 	private Model lampLegCube;
 	private Model lampHeadCube;
 	
+	float armThickness;
 	float legHeights;
 	float headLength;
 	
@@ -35,7 +36,7 @@ public class Lamp extends SceneObject{
 	private NameNode lampRoot;
 	private Light spotlight;
 	
-	public Lamp(float legHeights, float headLength, Model lampLegCube, Model lampHeadCube, Light spotlight2) {
+	public Lamp(float legHeights, float legThickness, float headLength, Model lampLegCube, Model lampHeadCube, Light spotlight2) {
 		this.legHeights = legHeights;
 		this.headLength = headLength;
 		
@@ -72,13 +73,16 @@ public class Lamp extends SceneObject{
 	public void init() {
 	    // Lamp Dimensions
 	    float baseHeight = 0.5f;
-	    float armLength = 6;
+	    float armLength = legHeights;
 	    
 	    //Lamp builder
 	    lampRoot = new NameNode("root");
-	    lampWorldTransform = new TransformNode("PlayerTransform", Mat4Transform.translate(5f, 0, 0));
-	    TransformNode lampTranslate = new TransformNode("lamp transform", Mat4Transform.translate(0.5f, 0, 0));
 	    
+	    //World lamp position, with origin at bottom
+	    lampWorldTransform = new TransformNode("PlayerTransform", Mat4Transform.translate(0f, 0, 0));
+	    TransformNode lampTranslate = new TransformNode("lamp transform", Mat4Transform.translate(0f, 0, 0));
+	    
+	    //Base
 	    NameNode base = new NameNode("base");
 		Mat4 a = Mat4Transform.translate(0, 0.5f, 0);	//Bottom origin point
 		a = Mat4.multiply(Mat4Transform.scale(3, baseHeight, 2.25f), a);	//Scale
@@ -96,7 +100,7 @@ public class Lamp extends SceneObject{
 	    NameNode lowerArm = new NameNode("lower arm");
 		a = new Mat4(1);
 		a = Mat4.multiply(Mat4Transform.translate(0, 0.5f, 0), a);		//Bottom origin point
-		a = Mat4.multiply(Mat4Transform.scale(1, armLength, 1), a);		//Scale
+		a = Mat4.multiply(Mat4Transform.scale(armThickness, armLength, armThickness), a);		//Scale
 		//a = Mat4.multiply(Mat4Transform.rotateAroundZ(20), a);		//Local rotation
 		
 		TransformNode lowerArmTransform = new TransformNode("lower arm transform", a);
@@ -113,7 +117,7 @@ public class Lamp extends SceneObject{
 	    NameNode upperArm = new NameNode("upper arm");
 		a = new Mat4(1);
 		a = Mat4.multiply(Mat4Transform.translate(0, 0.5f, 0), a);		//Bottom origin point
-		a = Mat4.multiply(Mat4Transform.scale(1, armLength, 1), a);		//Scale
+		a = Mat4.multiply(Mat4Transform.scale(armThickness, armLength, armThickness), a);		//Scale
 		//a = Mat4.multiply(Mat4Transform.rotateAroundZ(20), a);		//Local Rotation
 			TransformNode upperArmTransform = new TransformNode("upper arm transform", a);
 			ModelNode upperArmModel = new ModelNode("Cube(upper arm)", lampLegCube);
@@ -126,7 +130,7 @@ public class Lamp extends SceneObject{
 	    NameNode head = new NameNode("head");
 		a = new Mat4(1);
 		a = Mat4.multiply(Mat4Transform.translate(0, 0.5f, 0), a);		//Bottom origin point
-		a = Mat4.multiply(Mat4Transform.scale(4, 2, 2), a);				//Scale
+		a = Mat4.multiply(Mat4Transform.scale(headLength, 2, 2), a);				//Scale
 			TransformNode headTransform = new TransformNode("head transform", a);
 			ModelNode headModel = new ModelNode("Cube(head)", lampLegCube);
 		

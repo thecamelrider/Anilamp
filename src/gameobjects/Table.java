@@ -22,7 +22,7 @@ public class Table extends SceneObject {
 	float posY = 0;
 	float posZ = 0;
 
-	public Table(float width, float length, float legHeight, Model cubeModel) {
+	public Table(float width, float length, float legHeight, float legThickness, Model cubeModel) {
 		this.width = width;
 		this.length = length;
 		this.legHt = legHeight;
