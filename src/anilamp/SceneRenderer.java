@@ -1,5 +1,7 @@
 package anilamp;
 
+import java.util.ArrayList;
+
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -11,14 +13,6 @@ import javafx.geometry.VPos;
 import scenegraph.SGNode;
 
 public class SceneRenderer {
-	//Buffers and cam
-	//CAMERA SHOULD NOT BE HERE, ONLY PV
-	public Camera camera;
-	private int[] uboBuffers;
-	
-	//MVP matrix
-	private Mat4 pv;
-	
 	//Shader
 	private Shader shader;
 	
@@ -29,10 +23,6 @@ public class SceneRenderer {
 	private Light[] pointLights;
 	private int numLights = 0;
 	private final int MAX_LIGHTS = 5;
-	
-	//Renderables
-	//Model[] models;
-	SGNode[] rootNodes;
 	
 	public SceneRenderer(GLAutoDrawable drawable) {
 		//Useful Debug
@@ -129,12 +119,7 @@ public class SceneRenderer {
         	shader.setFloat(gl, pointLightID + ".quadratic", 0.032f);
         }
     }
-	
-	//Gets updated by cam
-	public void updatePV(Mat4 perspective, Mat4 view) {
-		pv = Mat4.multiply(perspective, view);
-	}
-	
+		
 	public void updateTransforms(SGNode[] roots) {
 		//Update all positions
 		for (int i =0; i < roots.length; i++) {
@@ -149,32 +134,31 @@ public class SceneRenderer {
 		
 	}
 	
-	//Not pure anymore :(
-	public void render(GL3 gl, Model[] models) {
-		//This is gonna be moved outta here
-		updatePV(camera.getPerspectiveMatrix(), camera.getViewMatrix());
-
+	//Sexy Pure function, not pure anymore :(
+	public void render(GL3 gl, ArrayList<Model> models, Mat4 perspectiveMat, Mat4 viewMat) {
 		//Clear color buffer
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-	
-		//Really disgusted by all the scattered, virtual and overly OOP rendering
-	    //Full rendering is in here now
-	    
-	    //Phase 1: update all the shader params for each mode
+		
+		//Compute pv
+		Mat4 pv = Mat4.multiply(perspectiveMat, viewMat);
+		
+		//Go through all models and render
 	    for(Model model : models) {
 		    //Set shader props of each model
-		    shader.use(gl);
-
-		    //Matrix
-		    Mat4 mvpMatrix = Mat4.multiply(pv, model.modelMatrix);
-		    shader.setFloatArray(gl, "model", model.modelMatrix.toFloatArrayForGLSL());
-		    shader.setFloatArray(gl, "mvpMatrix", mvpMatrix.toFloatArrayForGLSL());		    
-		    shader.setVec3(gl, "viewPos", camera.getPosition());
-
-		    //Lighting
-		    updateLightBuffers(gl);
+		    //shader.use(gl);
+	    	shader = model.shader;
+	    	shader.use(gl);
+	    	
+	    	//---------Can be set once in the future within uniform block
+	    	//Set all the uniforms
+		    //Set matrix uniforms in shader		    
+		    shader.setFloatArray(gl, "viewPos", viewMat.toFloatArrayForGLSL());
 		    
-		    //Material props
+		    //Set lighting uniforms
+		    updateLightBuffers(gl);
+		    //-----------------------------------------
+		    
+		    //Set Material props
 		    shader.setVec3(gl, "material.ambient", model.material.getAmbient());
 		    shader.setVec3(gl, "material.diffuse", model.material.getDiffuse());
 		    shader.setVec3(gl, "material.specular", model.material.getSpecular());
@@ -186,17 +170,24 @@ public class SceneRenderer {
 		      gl.glActiveTexture(GL.GL_TEXTURE0);
 		      gl.glBindTexture(GL.GL_TEXTURE_2D, model.textureId1[0]);
 		    }
+		    
 		    if (model.textureId2!=null) {
 		      shader.setInt(gl, "second_texture", 1);
 		      gl.glActiveTexture(GL.GL_TEXTURE1);
 		      gl.glBindTexture(GL.GL_TEXTURE_2D, model.textureId2[0]);
 		    }
-
-		    //Shader properties set, ready to render mesh
-		    //Render mesh
-	        gl.glBindVertexArray(model.mesh.vertexArrayId[0]);
-	        gl.glDrawElements(GL.GL_TRIANGLES, model.mesh.indices.length, GL.GL_UNSIGNED_INT, 0);
-	        gl.glBindVertexArray(0);
+		    
+		    //Foreach instance of model
+		    for(SGNode transform : model.transforms) {
+			    Mat4 mvpMatrix = Mat4.multiply(pv, model.modelMatrix);
+			    shader.setFloatArray(gl, "model", model.modelMatrix.toFloatArrayForGLSL());
+			    shader.setFloatArray(gl, "mvpMatrix", mvpMatrix.toFloatArrayForGLSL());
+			    
+			    //Render mesh
+		        gl.glBindVertexArray(model.mesh.vertexArrayId[0]);
+		        gl.glDrawElements(GL.GL_TRIANGLES, model.mesh.indices.length, GL.GL_UNSIGNED_INT, 0);
+		        gl.glBindVertexArray(0);
+		    }
 	    }
 	}
 

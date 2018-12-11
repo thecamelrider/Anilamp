@@ -1,25 +1,29 @@
 package anilamp;
 import gmaths.*;
 import meshes.Mesh;
+import scenegraph.SGNode;
 
 import java.nio.*;
+import java.util.ArrayList;
+
 import com.jogamp.common.nio.*;
 import com.jogamp.opengl.*;
 
 import gameobjects.LightObject;
 
 public class Model {
+  public Mesh mesh;
+  //Shader uniforms
   public Shader shader;
   
   public Mat4 worldMatrix;
-  public Mat4 modelMatrix;
-  public Mat4 fullMatrix;
-  
-  public Mesh mesh;
+  public Mat4 modelMatrix; 
   public int[] textureId1; 
   public int[] textureId2; 
- 
   public Material material;
+  
+  //Nodes attached to this model
+  public ArrayList<SGNode> transforms = new ArrayList<SGNode> ();
   
   public Model(Shader shader, Material material, Mat4 modelMatrix, Mesh mesh, int[] textureId1, int[] textureId2) {
     this.mesh = mesh;

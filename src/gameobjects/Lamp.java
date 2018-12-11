@@ -2,6 +2,7 @@ package gameobjects;
 
 import com.jogamp.opengl.GL3;
 
+import anilamp.Light;
 import anilamp.Model;
 import anilamp.Utils;
 import gmaths.Mat4;
@@ -10,10 +11,11 @@ import gmaths.Vec3;
 import scenegraph.LightNode;
 import scenegraph.ModelNode;
 import scenegraph.NameNode;
+import scenegraph.SGNode;
 import scenegraph.TransformNode;
 
 public class Lamp extends SceneObject{
-	//Transforms to fuck with
+	//Controllable transforms
 	public TransformNode lampWorldTransform;
 	public TransformNode lowerArmRotate;
 	public TransformNode upperArmRotate;
@@ -31,16 +33,16 @@ public class Lamp extends SceneObject{
 	
 	//Rendered subobjects
 	private NameNode lampRoot;
-	private LightObject spotlight;
+	private Light spotlight;
 	
-	public Lamp(float legHeights, float headLength, Model lampLegCube, Model lampHeadCube, LightObject spotlight) {
+	public Lamp(float legHeights, float headLength, Model lampLegCube, Model lampHeadCube, Light spotlight2) {
 		this.legHeights = legHeights;
 		this.headLength = headLength;
 		
 		this.lampLegCube = lampLegCube;
 		this.lampHeadCube = lampHeadCube;
 		
-		this.spotlight = spotlight;
+		this.spotlight = spotlight2;
 		
 		init();
 	}
@@ -129,7 +131,7 @@ public class Lamp extends SceneObject{
 			ModelNode headModel = new ModelNode("Cube(head)", lampLegCube);
 		
 		//Spotlight
-		LightNode lightNode = new LightNode("spotlight", spotlight);
+		//LightNode lightNode = new LightNode("spotlight", spotlight);
 		
 	    //Build index
 	    lampRoot.addChild(lampWorldTransform);
@@ -153,12 +155,10 @@ public class Lamp extends SceneObject{
 	    					translateHead.addChild(head);
 	    						head.addChild(headTransform);
 	    						headTransform.addChild(headModel);
-	    					translateHead.addChild(lightNode);
+	    					//translateHead.addChild(lightNode);
 	    //Lamp
-	    				
 	    lampRoot.update();
 	    lampRoot.print(0, false);
-
 	}
 	
 	@Override
@@ -171,5 +171,11 @@ public class Lamp extends SceneObject{
 	public void setPosition(float x, float y, float z) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public SGNode getRootNode() {
+		// TODO Auto-generated method stub
+		return lampRoot;
 	}
 }

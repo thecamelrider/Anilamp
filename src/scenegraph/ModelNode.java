@@ -2,6 +2,7 @@ package scenegraph;
 import com.jogamp.opengl.*;
 
 import anilamp.Model;
+import gmaths.Mat4;
 
 public class ModelNode extends SGNode {
 
@@ -9,11 +10,13 @@ public class ModelNode extends SGNode {
 
   public ModelNode(String name, Model m) {
     super(name);
-    model = m; 
+    model = m;
+    model.transforms.add(this);
   }
-
-  public void update() {
-	  //Update world transform!
-	  model.worldMatrix = worldTransform;
-  }
+  
+  @Override
+	protected void update(Mat4 t) {
+		this.worldTransform = t;
+	}
+  
 }

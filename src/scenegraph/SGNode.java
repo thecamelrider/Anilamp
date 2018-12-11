@@ -7,7 +7,7 @@ public class SGNode {
 
   protected String name;
   protected ArrayList<SGNode> children;
-  protected Mat4 worldTransform;
+  public Mat4 worldTransform;
 
   public SGNode(String name) {
     children = new ArrayList<SGNode>();
@@ -48,11 +48,4 @@ public class SGNode {
       children.get(i).print(indent+1, inFull);
     }
   }
-  
-  public void draw(GL3 gl) {
-    for (int i=0; i<children.size(); i++) {
-      children.get(i).draw(gl);
-    }
-  }
-
 }

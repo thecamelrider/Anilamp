@@ -7,6 +7,7 @@ import anilamp.*;
 import gmaths.*;
 import scenegraph.ModelNode;
 import scenegraph.NameNode;
+import scenegraph.SGNode;
 import scenegraph.TransformNode;
 
 public class Table extends SceneObject {
@@ -14,14 +15,13 @@ public class Table extends SceneObject {
 	public float length;
 	public float legHt;
 	public TransformNode tableWorldPosition;
+	NameNode tableRoot;
 	
 	//Scene graph accessors
 	float posX = 0;
 	float posY = 0;
 	float posZ = 0;
-	
-	//Rendering
-	NameNode tableRoot;
+
 	public Table(float width, float length, float legHeight, Model cubeModel) {
 		this.width = width;
 		this.length = length;
@@ -31,6 +31,12 @@ public class Table extends SceneObject {
 	
 	public Vec3 getPosition() {
 		return new Vec3(posX, posY, posZ);
+	}
+	
+	@Override
+	public SGNode getRootNode() {
+		// TODO Auto-generated method stub
+		return tableRoot;
 	}
 	
 	public void setPosition(float x, float y, float z) {
