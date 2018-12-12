@@ -71,6 +71,9 @@ public class Anilamp extends JFrame implements ActionListener {
       b = new JButton("camera Z");
       b.addActionListener(this);
       p.add(b);
+      b = new JButton("Toggle Light");
+      b.addActionListener(this);
+      p.add(b);
       b = new JButton("Jump");
       b.addActionListener(this);
       p.add(b);
@@ -97,7 +100,6 @@ public class Anilamp extends JFrame implements ActionListener {
       glEventListener.JumpToRandomPosition();
     }
     else if (e.getActionCommand().equalsIgnoreCase("Random Pose")) {
-      glEventListener.strikeRandomPose();
     }
     else if(e.getActionCommand().equalsIgnoreCase("quit"))
       System.exit(0);

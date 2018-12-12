@@ -20,6 +20,7 @@ public class Light {
     //Spotlight params
     public float cutoff = (float) Math.cos(Math.toRadians(60.0));
     public float outercutoff = (float) Math.cos(Math.toRadians(60.0));
+	public boolean active = true;
 	
     //Light type not saved in instance since it isnt needed in rendering since
 	//Each type in its own array in renderer

@@ -6,6 +6,8 @@ import com.jogamp.opengl.*;
 public class SGNode {
 
   protected String name;
+  
+  protected SGNode parent;
   protected ArrayList<SGNode> children;
   public Mat4 worldTransform;
 
@@ -17,6 +19,7 @@ public class SGNode {
 
   public void addChild(SGNode child) {
     children.add(child);
+    child.parent = this;
   }
   
   public void update() {

@@ -51,6 +51,8 @@ out vec4 fragColor;
  
 uniform vec3 viewPos;
 
+uniform int dirLightActive;
+uniform int spotLightActive;
 uniform float numPointLights;
 uniform DirLight dirLight;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
@@ -68,7 +70,10 @@ void main() {
   vec3 viewDir = normalize(viewPos - aPos);
   
   // Directional lighting
-  vec3 result = CalcDirLight(dirLight, norm, viewDir);
+  vec3 result = vec3(0.0);
+  
+  if(dirLightActive == 1)
+  	result = CalcDirLight(dirLight, norm, viewDir);
   
   
   // point lights
@@ -76,7 +81,8 @@ void main() {
       result += CalcPointLight(pointLights[i], norm, aPos, viewDir);    
   
   // optional spot light
-  //result += CalcSpotLight(spotLight, norm, aPos, viewDir);    
+  if(spotLightActive == 1)
+  	result += CalcSpotLight(spotLight, norm, aPos, viewDir);    
   
   fragColor = vec4(result, 1.0);
 }

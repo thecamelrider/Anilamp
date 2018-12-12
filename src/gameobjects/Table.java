@@ -10,6 +10,9 @@ import scenegraph.NameNode;
 import scenegraph.SGNode;
 import scenegraph.TransformNode;
 
+/* I declare that this code is my own work */ 
+/* Author Husain Ahmed huss54@gmail.com */
+
 public class Table extends SceneObject {
 	public float width;
 	public float length;
@@ -37,7 +40,7 @@ public class Table extends SceneObject {
 	public SGNode getRootNode() {
 		// TODO Auto-generated method stub
 		return tableRoot;
-	}
+	} 
 	
 	public void setPosition(float x, float y, float z) {
 		//Update position of transform

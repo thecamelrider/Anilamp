@@ -14,6 +14,8 @@ import com.jogamp.opengl.util.glsl.*;
 
 import gameobjects.*;
 
+/* I declare that this code is my own work */ 
+/* Author Husain Ahmed huss54@gmail.com */
 public class Anilamp_GLEventListener implements GLEventListener {
   
   private static final boolean DISPLAY_SHADERS = false;
@@ -77,28 +79,7 @@ public class Anilamp_GLEventListener implements GLEventListener {
     	model.dispose(gl);
     	}
     }
-  
-  // ***************************************************
-  /* INTERACTION
-   *
-   *	Handle animation separately?
-   */
-  
-  private boolean animation = false;
-  private double savedTime = 0;
-  private SceneRenderer sceneRenderer;
-  
-  public void startAnimation() {
-    animation = true;
-    startTime = getSeconds()-savedTime;
-  }
-   
-  public void stopAnimation() {
-    animation = false;
-    double elapsedTime = getSeconds()-startTime;
-    savedTime = elapsedTime;
-  }
-  
+    
   // ***************************************************
   /* THE SCENE
    * Now define all the methods to handle the scene.
@@ -117,11 +98,6 @@ public class Anilamp_GLEventListener implements GLEventListener {
   private Table table;
   private Light sun;
   private Room room;
-  
-  private int[] uboBuffers;
-  
-  //Save ref to nodes
-  private boolean animating, posing, jumping;
     
   private void initScene(GL3 gl) {
 	//Initialize scene
@@ -158,8 +134,13 @@ public class Anilamp_GLEventListener implements GLEventListener {
     sun.direction = new Vec3(0, -0.2f, 0.8f);
     sun.position = new Vec3(0, 15, 0);
     
-    //Light spotlight = new Light();
-    
+    //Adding the spotlight
+    Light spotlight = new Light();
+    spotlight.ambient = new Vec3(1, 0.3f, 0.5f);
+    spotlight.diffuse = new Vec3(1, 0.3f, 0.5f);
+    spotlight.specular = new Vec3(1, 1, 1);
+
+    //2 Pointlights
     Light pointLight = new Light();
     pointLight.ambient = new Vec3(1, 1, 1);
     pointLight.diffuse = new Vec3(1, 1, 1);
@@ -172,6 +153,8 @@ public class Anilamp_GLEventListener implements GLEventListener {
     pointLight2.specular = new Vec3(1, 1, 1);
     pointLight2.position = new Vec3(5, 5, 0);
     
+    //Add lights
+    sceneRenderer.addLight(spotlight, Light.Types.SPOTLIGHT);
     sceneRenderer.addLight(pointLight2, Light.Types.POINTLIGHT);
     sceneRenderer.addLight(pointLight, Light.Types.POINTLIGHT);
     sceneRenderer.addLight(sun, Light.Types.DIRECTION);
@@ -212,7 +195,7 @@ public class Anilamp_GLEventListener implements GLEventListener {
     table = new Table(6.1f, 7.62f, 6.1f, 1, woodCube);
     
     //table.setPosition(0, 0, 0);
-    lamp = new Lamp(1.5f, 0.3f, 0.7f, stoneCube, plasterCube, new Light());
+    lamp = new Lamp(1.5f, 0.3f, 1.2f, stoneCube, plasterCube, spotlight);
 
     //Add models to database
     myModels.add(woodCube);
@@ -252,12 +235,10 @@ public class Anilamp_GLEventListener implements GLEventListener {
   
   //-----Update/render loop
   private void render(GL3 gl) {
- 
+
 	//Update animations
 	if(jumping)
     	updateJumpAnim();
-    if(posing)
-    	updatePoseAnim();
 
 	//Update all model transforms
 	for (SGNode node : myRootNodes) {
@@ -268,12 +249,59 @@ public class Anilamp_GLEventListener implements GLEventListener {
     sceneRenderer.render(gl, myModels, camera.getPerspectiveMatrix(), camera.getViewMatrix());
   }
 
-  public void updateJumpAnim() {
-	  
-  }
   
-  public void updatePoseAnim() {
+  // ***************************************************
+  /* INTERACTION
+   *
+   *	Handle animation separately?
+   *	No time for that, handle anims here
+   */
+  
+  private boolean posing, jumping, animating = false;
+  private double savedTime = 0;
+  private SceneRenderer sceneRenderer;
+  private Vec3 targetJumpPos;
+  private Vec3 startJumpPos;
+  
+  //Save ref to nodes
+
+  public void startAnimation() {
+    animating = true;
+    startTime = getSeconds()-savedTime;
+  }
+   
+  public void stopAnimation() {
+    animating = false;
+    double elapsedTime = getSeconds()-startTime;
+    savedTime = elapsedTime;
+  }
+
+  public void updateJumpAnim() {
+	  float jumpTime = 1.2f;
+			  
+	  //2 parts, setup and the jump
+	  //Setup
+	  if(startTime < 0.5f) {
+		  
+	  }
 	  
+	  //Jump params
+	  float lengthX = targetJumpPos.x - startJumpPos.x;
+	  float lengthZ = targetJumpPos.z - startJumpPos.z;
+	  
+	  //Jump time
+	  float displacementX = (float) (((lengthX / jumpTime) * savedTime) + startJumpPos.x);		//LERP
+	  float displacementZ = (float) (((lengthZ / jumpTime) * savedTime) + startJumpPos.z);		//LERP
+	  float displacementY = (float) Math.sin((Math.PI / jumpTime) * savedTime);		//SIN
+		
+	  lamp.setPosition(new Vec3(displacementX, displacementY, displacementZ));
+	  //Just teleport for now
+	  //lamp.setPosition(targetJumpPos);
+	  
+	  if(savedTime > jumpTime) {
+		  stopAnimation();
+		  jumping = false;
+	  }
   }
  
   public void JumpToRandomPosition() {
@@ -281,30 +309,18 @@ public class Anilamp_GLEventListener implements GLEventListener {
 	if(animating)
 		return;
 	
-	//Otherwise set final jump position
-	
-	//Change table pos
+	//Use table pos to offset random
 	Vec3 pos = table.getPosition();
-	table.setPosition(pos.x + 1f, pos.y, pos.z);
 	
-	//Random end pos
+	//Save start and pick end pos
 	float targetX = (float) ((Math.random() * table.width) + 0);
 	float targetZ = (float) ((Math.random() * table.length) + 0);
 
-	Vec3 targetPos = new Vec3(targetX, 0, targetZ);
-  }
+	startJumpPos = lamp.getPosition();
+	targetJumpPos = new Vec3(targetX, 7.6f, targetZ);
 	
-  public void strikeRandomPose() {
-	// If already animating ignore
-	if (animating)
-		return;
-	
-	//Otherwise set final pose
-	
-    //double elapsedTime = getSeconds()-startTime;
-    //float rotateAngle = 180f+90f*(float)Math.sin(elapsedTime);
-    //leftArmRotate.setTransform(Mat4Transform.rotateAroundX(rotateAngle));
-    //leftArmRotate.update();
+	jumping = true;
+	startAnimation();
   }
   
   public void toggleLight() {

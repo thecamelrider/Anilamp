@@ -14,6 +14,9 @@ import scenegraph.NameNode;
 import scenegraph.SGNode;
 import scenegraph.TransformNode;
 
+/* I declare that this code is my own work */ 
+/* Author Husain Ahmed huss54@gmail.com */
+
 public class Lamp extends SceneObject{
 	//Controllable transforms
 	public TransformNode lampWorldTransform;
@@ -25,10 +28,11 @@ public class Lamp extends SceneObject{
 	private Model lampLegCube;
 	private Model lampHeadCube;
 	
-	float armThickness;
+	private float legThickness;
 	float legHeights;
 	float headLength;
-	
+    float baseHeight = 0.5f;
+
 	//Lamp position
 	//private Vec3 worldPos;
 	
@@ -36,20 +40,21 @@ public class Lamp extends SceneObject{
 	private NameNode lampRoot;
 	private Light spotlight;
 	
-	public Lamp(float legHeights, float legThickness, float headLength, Model lampLegCube, Model lampHeadCube, Light spotlight2) {
+	public Lamp(float legHeights, float legThickness, float headLength, Model lampLegCube, Model lampHeadCube, Light spotlight) {
 		this.legHeights = legHeights;
+		this.legThickness = legThickness;
 		this.headLength = headLength;
 		
 		this.lampLegCube = lampLegCube;
 		this.lampHeadCube = lampHeadCube;
 		
-		this.spotlight = spotlight2;
+		this.spotlight = spotlight;
 		
 		init();
 	}
 	
 	public void toggleLight () {
-		
+		spotlight.active = !spotlight.active;
 	}
 	
 	//Animation access
@@ -71,16 +76,13 @@ public class Lamp extends SceneObject{
 	
 	//Build index function
 	public void init() {
-	    // Lamp Dimensions
-	    float baseHeight = 0.5f;
-	    float armLength = legHeights;
 	    
 	    //Lamp builder
 	    lampRoot = new NameNode("root");
 	    
 	    //World lamp position, with origin at bottom
-	    lampWorldTransform = new TransformNode("PlayerTransform", Mat4Transform.translate(0f, 0, 0));
-	    TransformNode lampTranslate = new TransformNode("lamp transform", Mat4Transform.translate(0f, 0, 0));
+	    lampWorldTransform = new TransformNode("PlayerTransform", Mat4Transform.translate(0f, 6.7f, 0));
+	    position = new Vec3(0, 6.7f, 0);
 	    
 	    //Base
 	    NameNode base = new NameNode("base");
@@ -89,27 +91,23 @@ public class Lamp extends SceneObject{
 			TransformNode baseTransform = new TransformNode("base transform", a);
 			ModelNode baseModel = new ModelNode("Cube(base)", lampLegCube);
 		
-		//Lower arm
-		//Translate lower arm
-		//Rotate upper arm
+		//Transform coord to to lower arm root
 	    TransformNode translateLower = new TransformNode("Translate lower Arm",
 	    		Mat4Transform.translate(0, baseHeight, 0));
 	    lowerArmRotate = new TransformNode("Rotate lower arm",
 	    		Mat4Transform.rotateAroundZ(-20));
 	    
+	    //Lower arm transform
 	    NameNode lowerArm = new NameNode("lower arm");
-		a = new Mat4(1);
-		a = Mat4.multiply(Mat4Transform.translate(0, 0.5f, 0), a);		//Bottom origin point
-		a = Mat4.multiply(Mat4Transform.scale(armThickness, armLength, armThickness), a);		//Scale
-		//a = Mat4.multiply(Mat4Transform.rotateAroundZ(20), a);		//Local rotation
+		a = Mat4Transform.translate(0, 0.5f, 0);			//Bottom origin point
+		a = Mat4.multiply(Mat4Transform.scale(legThickness, legHeights, legThickness), a);		//Scale
 		
 		TransformNode lowerArmTransform = new TransformNode("lower arm transform", a);
 			ModelNode lowerArmModel = new ModelNode("Cube(lower arm)", lampLegCube);
 			
-		//Translate translate upper arm
+		//Transform coords to upper arm position/rotation
 		TransformNode translateUpper = new TransformNode("Translate upper", 
-				Mat4Transform.translate(0, armLength, 0));
-		
+				Mat4Transform.translate(0, legHeights, 0));		
 		upperArmRotate = new TransformNode("Rotate upper",
 				Mat4Transform.rotateAroundZ(-20));
 		
@@ -117,36 +115,39 @@ public class Lamp extends SceneObject{
 	    NameNode upperArm = new NameNode("upper arm");
 		a = new Mat4(1);
 		a = Mat4.multiply(Mat4Transform.translate(0, 0.5f, 0), a);		//Bottom origin point
-		a = Mat4.multiply(Mat4Transform.scale(armThickness, armLength, armThickness), a);		//Scale
-		//a = Mat4.multiply(Mat4Transform.rotateAroundZ(20), a);		//Local Rotation
+		a = Mat4.multiply(Mat4Transform.scale(legThickness, legHeights, legThickness), a);		//Scale
 			TransformNode upperArmTransform = new TransformNode("upper arm transform", a);
 			ModelNode upperArmModel = new ModelNode("Cube(upper arm)", lampLegCube);
 		
 		//Translate head
 		TransformNode translateHead = new TransformNode("Translate head", 
-				Mat4Transform.translate(0, armLength, 0));
+				Mat4Transform.translate(0, legHeights, 0));
 		
 		//Head
 	    NameNode head = new NameNode("head");
 		a = new Mat4(1);
-		a = Mat4.multiply(Mat4Transform.translate(0, 0.5f, 0), a);		//Bottom origin point
-		a = Mat4.multiply(Mat4Transform.scale(headLength, 2, 2), a);				//Scale
+		a = Mat4.multiply(Mat4Transform.translate(0.2f, 0.5f, 0), a);		//Move model to around bottom left origin point
+		a = Mat4.multiply(Mat4Transform.scale(headLength, headLength * 0.7f, headLength * 0.7f), a);				//Scale
 			TransformNode headTransform = new TransformNode("head transform", a);
 			ModelNode headModel = new ModelNode("Cube(head)", lampLegCube);
 		
-		//Spotlight
-		//LightNode lightNode = new LightNode("spotlight", spotlight);
+		//Move origin to front of head
+		a = Mat4Transform.translate(headLength, 0, 0);
+		TransformNode lightTranslate = new TransformNode("light transform", a);
 		
+		//Spotlight
+		NameNode spotlightNode = new NameNode("Spotlight");
+		LightNode lightNode = new LightNode("LightNode", spotlight);
+				
 	    //Build index
 	    lampRoot.addChild(lampWorldTransform);
-	    	lampWorldTransform.addChild(lampTranslate);
-	    		lampTranslate.addChild(base);
+	    	lampWorldTransform.addChild(base);
 	    		base.addChild(baseTransform);
 	    			baseTransform.addChild(baseModel);
 	    		base.addChild(translateLower);
+    			translateLower.addChild(lowerArmRotate);
 	    			//lowerArmRotate.addChild(translateLower);
 	    			//translateLower.addChild(lowerArm);
-	    			translateLower.addChild(lowerArmRotate);
 	    			lowerArmRotate.addChild(lowerArm);
 		    			lowerArm.addChild(lowerArmTransform);
 		    			lowerArmTransform.addChild(lowerArmModel);
@@ -159,7 +160,9 @@ public class Lamp extends SceneObject{
 	    					translateHead.addChild(head);
 	    						head.addChild(headTransform);
 	    						headTransform.addChild(headModel);
-	    					//translateHead.addChild(lightNode);
+	    					translateHead.addChild(lightTranslate);
+	    						lightTranslate.addChild(spotlightNode);
+	    							spotlightNode.addChild(lightNode);
 	    //Lamp
 	    lampRoot.update();
 	    lampRoot.print(0, false);
@@ -167,13 +170,11 @@ public class Lamp extends SceneObject{
 	
 	@Override
 	public Vec3 getPosition() {
-		Vec3 positionk;
 		return this.position;
 	}
 
 	@Override
 	public void setPosition(float x, float y, float z) {
-		// TODO Auto-generated method stub
 		
 	}
 
@@ -181,5 +182,11 @@ public class Lamp extends SceneObject{
 	public SGNode getRootNode() {
 		// TODO Auto-generated method stub
 		return lampRoot;
+	}
+
+	public void setPosition(Vec3 targetPos) {
+		
+		lampWorldTransform.setTransform(Mat4Transform.translate(targetPos));
+		
 	}
 }

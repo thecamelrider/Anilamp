@@ -1,5 +1,8 @@
 package anilamp;
 
+/* I declare that this code is my own work */ 
+/* Author Husain Ahmed huss54@gmail.com */
+
 import java.util.ArrayList;
 
 import com.jogamp.opengl.GL;
@@ -94,12 +97,20 @@ public class SceneRenderer {
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 		*/
 		
+		boolean spotLightActive = spotLight.active;
+		boolean dirLightActive = dirLight.active;
+		
+		shader.setInt(gl, "dirLightActive", (dirLightActive) ? 1 : 0);
+		shader.setInt(gl, "spotLightActive", (spotLightActive) ? 1 : 0);
+		
 		//Just do it the ugly way
         // directional light
-        shader.setVec3(gl, "dirLight.direction", dirLight.direction);
-        shader.setVec3(gl, "dirLight.ambient", dirLight.ambient);
-        shader.setVec3(gl, "dirLight.diffuse", dirLight.diffuse);
-        shader.setVec3(gl, "dirLight.specular", dirLight.specular);
+		if(dirLight.active) {
+	        shader.setVec3(gl, "dirLight.direction", dirLight.direction);
+	        shader.setVec3(gl, "dirLight.ambient", dirLight.ambient);
+	        shader.setVec3(gl, "dirLight.diffuse", dirLight.diffuse);
+	        shader.setVec3(gl, "dirLight.specular", dirLight.specular);			
+		}
         
         shader.setFloat(gl, "numPointLights", numLights);
         //For each pointlight
@@ -116,6 +127,24 @@ public class SceneRenderer {
         	shader.setFloat(gl, pointLightID + ".constant", 1.0f);
         	shader.setFloat(gl, pointLightID + ".linear", 0.09f);
         	shader.setFloat(gl, pointLightID + ".quadratic", 0.032f);
+        }
+        
+        if(spotLight.active) {
+        	shader.setVec3(gl, "spotLight.position", spotLight.position);
+	        shader.setVec3(gl, "spotLight.direction", spotLight.direction);
+	        shader.setVec3(gl, "spotLight.ambient", spotLight.ambient);
+	        shader.setVec3(gl, "spotLight.diffuse", spotLight.diffuse);
+	        shader.setVec3(gl, "spotLight.specular", spotLight.specular);			
+	        
+            //Attenuation params
+        	shader.setFloat(gl, "spotLight.constant", 1.0f);
+        	shader.setFloat(gl, "spotLight.linear", 0.09f);
+        	shader.setFloat(gl, "spotLight.quadratic", 0.032f);
+        	
+        	//Light size
+        	shader.setFloat(gl, "spotLight.cutOff", spotLight.cutoff);
+        	shader.setFloat(gl, "spotLight.outerCutOff", spotLight.outercutoff);
+
         }
     }
 		
@@ -173,7 +202,8 @@ public class SceneRenderer {
 		    
 		    //Foreach instance of model
 		    for(SGNode transform : model.transforms) {
-		    	Mat4 modelMatrix = Mat4.multiply(transform.worldTransform, model.modelMatrix);
+		    	Mat4 modelMatrix = Mat4.multiply(model.modelMatrix, transform.worldTransform);
+		    	//modelMatrix = transform.worldTransform;
 		    	
 			    Mat4 mvpMatrix = Mat4.multiply(pv, modelMatrix);
 			    //Combine local model transform and world transform from scene graph
